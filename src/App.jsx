@@ -176,9 +176,19 @@ export default function ClientOrderForm(){
 
     let saved=false;
     try{
-      const res=await fetch(`${FIREBASE_URL}/orders/${orderId}.json`,{
-        method:"PUT",headers:{"Content-Type":"application/json"},
-        body:JSON.stringify(order)
+      // First read current DB
+      const getRes=await fetch(`${FIREBASE_URL}/db.json`);
+      const currentDB=await getRes.json()||{};
+      const currentOrders=currentDB.orders||[];
+
+      // Add new order to orders array
+      const updatedOrders=[order,...currentOrders];
+
+      // Write back to DB
+      const res=await fetch(`${FIREBASE_URL}/db.json`,{
+        method:"PATCH",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({orders:updatedOrders})
       });
       if(res.ok) saved=true;
     }catch(e){ saved=false; }
