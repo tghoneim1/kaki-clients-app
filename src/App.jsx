@@ -15,7 +15,7 @@ const IMG_DATA = {
 
 const PRODUCTS = [
   { id:"shamoort",      name:"حمام كداب (شامورط) (750-1000 جم)", emoji:"🐣", price:150, unit:"كج", qtyLabel:"فرخة" },
-  { id:"whole",         name:"فرخة كاملة (1600-1800 جم)",       emoji:"🐔", price:190, unit:"كج", qtyLabel:"فرخة" },
+  { id:"whole",         name:"فرخة كاملة (1600-1800 جم)",       emoji:"🐔", price:342, unit:"كج", qtyLabel:"فرخة" },
   { id:"breast_full",   name:"صدور بالعظام",                 emoji:"🥩", price:250, unit:"كج" },
   { id:"breast_deb",    name:"صدور مخلية بدون دهون",         emoji:"🥩", price:390, unit:"كج" },
   { id:"fillet",        name:"صدور فيليه (بانيه) بدون دهون", emoji:"🥓", price:390, unit:"كج" },
@@ -218,7 +218,7 @@ export default function ClientOrderForm(){
       <div style={{background:CARD,padding:"16px 18px",textAlign:"center",borderBottom:`2px solid ${GOLD}`,position:"sticky",top:0,zIndex:50,boxShadow:"0 2px 12px rgba(232,130,26,.12)"}}>
         <div style={{fontSize:28,marginBottom:2}}>🐔</div>
         <div style={{fontWeight:900,fontSize:18,color:GOLD}}>دواجن كاكي</div>
-        <div style={{fontSize:11,color:MUT,marginTop:2}}>طازج يومياً — مباشرة من المزرعة</div>
+        <div style={{fontSize:11,color:MUT,marginTop:2}}>تربية منزلية / حلال / علف نباتي / خالي من الهرمونات</div>
       </div>
 
       {/* Progress */}
