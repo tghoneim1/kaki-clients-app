@@ -58,7 +58,7 @@ const FIREBASE_URL="https://kaki-app-6b8ba-default-rtdb.firebaseio.com";
 const BG="#FFF8F0",CARD="#FFFFFF",BDR="#F0D9C0",CREAM="#3D1A00",MUT="#8B5E3C",GOLD="#E8821A",LIGHT="#FDE8CC",SUCCESS="#2D7A3A",ERROR="#C0392B",DARK="#3D1A00";
 
 export default function ClientOrderForm(){
-  const [step,setStep]=useState(1); // 1=info, 2=address, 3=items, 4=confirm
+  const [step,setStep]=useState(1);
   const [prefix,setPrefix]=useState("");
   const [name,setName]=useState("");
   const [phone,setPhone]=useState("");
@@ -81,6 +81,23 @@ export default function ClientOrderForm(){
   const [notes,setNotes]=useState("");
   const [errors,setErrors]=useState({});
   const [sent,setSent]=useState(false);
+
+  // ── Load prices from Firebase ──────────────────────────────
+  const [products,setProducts]=useState(PRODUCTS);
+  useEffect(()=>{
+    fetch(`${FIREBASE_URL}/db.json`)
+      .then(r=>r.json())
+      .then(db=>{
+        if(!db) return;
+        // Get current cycle prices
+        const cycle=db.cycle||1;
+        const cyclePrices=db.pricesByCycle?.[`cycle-${cycle}`]||db.prices||{};
+        if(Object.keys(cyclePrices).length>0){
+          setProducts(PRODUCTS.map(p=>cyclePrices[p.id]?{...p,price:cyclePrices[p.id]}:p));
+        }
+      })
+      .catch(()=>{});
+  },[]);
 
   useEffect(()=>{
     if(mapOpen){
@@ -123,7 +140,7 @@ export default function ClientOrderForm(){
 
   const add=id=>setItems(p=>({...p,[id]:(p[id]||0)+1}));
   const rem=id=>setItems(p=>{const n={...p};if(n[id]>1)n[id]--;else delete n[id];return n;});
-  const total=Object.entries(items).reduce((s,[id,q])=>{const p=PRODUCTS.find(x=>x.id===id);return s+(p?p.price*q:0);},0);
+  const total=Object.entries(items).reduce((s,[id,q])=>{const p=products.find(x=>x.id===id);return s+(p?p.price*q:0);},0);
   const hasItems=Object.values(items).some(q=>q>0);
 
   const inp=(field)=>({width:"100%",background:CARD,border:`1.5px solid ${errors[field]?ERROR:BDR}`,borderRadius:12,padding:"13px 14px",color:CREAM,fontSize:14,fontFamily:"'Cairo',sans-serif",direction:"rtl",boxSizing:"border-box",outline:"none",boxShadow:errors[field]?`0 0 0 3px rgba(192,57,43,.1)`:"none"});
@@ -196,7 +213,7 @@ export default function ClientOrderForm(){
     if(!saved){
       // WhatsApp fallback
       const lines=Object.entries(items).filter(([,q])=>q>0).map(([id,q])=>{
-        const p=PRODUCTS.find(x=>x.id===id);
+        const p=products.find(x=>x.id===id);
         return p?`${p.name} × ${q} = ج.م ${p.price*q}`:"";
       }).filter(Boolean).join("\n");
       const msg=`🐔 طلب جديد — دواجن كاكي\n━━━━━━━━━━━━\n👤 ${fullName}\n📞 ${phone}\n📍 ${fullAddress}\n━━━━━━━━━━━━\n${lines}\n━━━━━━━━━━━━\n💰 الإجمالي: ج.م ${total}`;
@@ -474,7 +491,7 @@ export default function ClientOrderForm(){
             )}
 
             <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:14}}>
-              {PRODUCTS.map(p=>{
+              {products.map(p=>{
                 const qty=items[p.id]||0;
                 return(
                   <div key={p.id} style={{background:CARD,borderRadius:14,padding:"12px 14px",border:`1px solid ${qty>0?GOLD:BDR}`,display:"flex",alignItems:"center",gap:12}}>
@@ -544,7 +561,7 @@ export default function ClientOrderForm(){
 
             <div style={{background:CARD,borderRadius:14,padding:"14px 16px",marginBottom:14,border:`1px solid ${BDR}`}}>
               <div style={{fontWeight:700,fontSize:13,color:GOLD,marginBottom:10}}>🛒 الأصناف</div>
-              {PRODUCTS.filter(p=>items[p.id]>0).map(p=>(
+              {products.filter(p=>items[p.id]>0).map(p=>(
                 <div key={p.id} style={{display:"flex",alignItems:"center",gap:10,padding:"8px 0",borderBottom:`1px solid ${BDR}`}}>
                   {IMG_DATA[p.id]
                     ?<img src={IMG_DATA[p.id]} alt={p.name} style={{width:44,height:44,objectFit:"cover",borderRadius:8,flexShrink:0}}/>
