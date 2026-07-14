@@ -14,16 +14,16 @@ const IMG_DATA = {
 };
 
 const PRODUCTS = [
-  { id:"shamoort",      name:"حمام كداب (شامورط) (750-1000 جم)", emoji:"🐣", price:150, unit:"كج", qtyLabel:"فرخة" },
-  { id:"whole",         name:"فرخة كاملة (1600-1800 جم)",       emoji:"🐔", price:342, unit:"كج", qtyLabel:"فرخة" },
-  { id:"breast_full",   name:"صدور بالعظام",                 emoji:"🥩", price:250, unit:"كج" },
-  { id:"breast_deb",    name:"صدور مخلية بدون دهون",         emoji:"🥩", price:390, unit:"كج" },
-  { id:"fillet",        name:"صدور فيليه (بانيه) بدون دهون", emoji:"🥓", price:390, unit:"كج" },
-  { id:"wings",         name:"وراك كاملة",                   emoji:"🍗", price:100, unit:"كج" },
-  { id:"tips",          name:"دبابيس (كينتاكي)",              emoji:"🍖", price:100, unit:"كج" },
-  { id:"shish",         name:"شيش طاوق بدون دهون",           emoji:"🍢", price:390, unit:"كج" },
-  { id:"chicken_wings", name:"أجنحة (تشيكن وينجز)",          emoji:"🍗", price:120, unit:"كج" },
-  { id:"shawarma",      name:"شاورمة بدون دهون",             emoji:"🌯", price:390, unit:"كج" },
+  { id:"shamoort",      name:"حمام كداب (شامورط) (750-1000 جم)", emoji:"🐣", price:150, unit:"فرخة", qtyLabel:"فرخة" },
+  { id:"whole",         name:"فرخة كاملة (1600-1800 جم)",         emoji:"🐔", price:342, unit:"فرخة", qtyLabel:"فرخة" },
+  { id:"breast_full",   name:"صدور بالعظام",                      emoji:"🥩", price:250, unit:"كج" },
+  { id:"breast_deb",    name:"صدور مخلية بدون دهون",              emoji:"🥩", price:390, unit:"كج" },
+  { id:"fillet",        name:"صدور فيليه (بانيه) بدون دهون",      emoji:"🥓", price:390, unit:"كج" },
+  { id:"wings",         name:"وراك كاملة",                        emoji:"🍗", price:100, unit:"كج" },
+  { id:"tips",          name:"دبابيس (كينتاكي)",                   emoji:"🍖", price:100, unit:"كج" },
+  { id:"shish",         name:"شيش طاوق بدون دهون",                emoji:"🍢", price:390, unit:"كج" },
+  { id:"chicken_wings", name:"أجنحة (تشيكن وينجز)",               emoji:"🍗", price:120, unit:"كج" },
+  { id:"shawarma",      name:"شاورمة بدون دهون",                  emoji:"🌯", price:390, unit:"كج" },
 ];
 
 const AREAS = {
@@ -81,6 +81,40 @@ export default function ClientOrderForm(){
   const [notes,setNotes]=useState("");
   const [errors,setErrors]=useState({});
   const [sent,setSent]=useState(false);
+  const [memberId,setMemberId]=useState(null);
+  const [isExisting,setIsExisting]=useState(false);
+  const [lookingUp,setLookingUp]=useState(false);
+
+  // Auto-fill from phone number
+  const handlePhone=async(val)=>{
+    setPhone(val);
+    if(val.length>=11){
+      setLookingUp(true);
+      try{
+        const r=await fetch(`${FIREBASE_URL}/db.json`);
+        const db=await r.json()||{};
+        const clients=db.clients||[];
+        const found=clients.find(c=>c.phone===val);
+        if(found){
+          setName(found.name||"");
+          setMemberId(found.memberId);
+          setIsExisting(true);
+        }else{
+          const nums=clients.map(c=>parseInt(c.memberId?.replace("MBR-",""))||0);
+          const next=nums.length>0?Math.max(...nums)+1:1;
+          setMemberId(`MBR-${String(next).padStart(3,"0")}`);
+          setIsExisting(false);
+        }
+      }catch{
+        setMemberId(`MBR-${String(Date.now()).slice(-3)}`);
+        setIsExisting(false);
+      }
+      setLookingUp(false);
+    }else{
+      setMemberId(null);
+      setIsExisting(false);
+    }
+  };
 
   // ── Load prices from Firebase ──────────────────────────────
   const [products,setProducts]=useState(PRODUCTS);
@@ -275,22 +309,25 @@ export default function ClientOrderForm(){
               {PREFIXES.map(p=><option key={p} value={p}>{p}</option>)}
             </select>
 
-            {/* Name */}
-            <label style={lbl}>الاسم *</label>
-            <input style={{...inp("name"),marginBottom:10}} placeholder="اسمك الكريم" value={name} onChange={e=>{setName(e.target.value);setErrors(r=>({...r,name:false}));}}/>
-            {errors.name&&<div style={{fontSize:11,color:"#f87171",marginBottom:8}}>⚠️ الاسم مطلوب</div>}
-
-            {/* Phone */}
+            {/* Phone first */}
             <label style={lbl}>رقم الهاتف *</label>
             <input style={{...inp("phone"),marginBottom:4}} placeholder="01XXXXXXXXX" type="tel" value={phone}
-              onChange={e=>{
-                setPhone(e.target.value);
-                setErrors(r=>({...r,phone:e.target.value&&!validatePhone(e.target.value)}));
-              }}/>
-            {errors.phone&&phone&&<div style={{fontSize:11,color:"#f87171",marginBottom:6}}>⚠️ رقم الهاتف غير صحيح — يجب أن يبدأ بـ 01 ويكون ١١ رقم</div>}
-            {errors.phone&&!phone&&<div style={{fontSize:11,color:"#f87171",marginBottom:6}}>⚠️ رقم الهاتف مطلوب</div>}
-            {phone&&validatePhone(phone)&&<div style={{fontSize:11,color:"#10b981",marginBottom:6}}>✅ رقم صحيح</div>}
+              onChange={e=>handlePhone(e.target.value)}/>
+            {lookingUp&&<div style={{fontSize:11,color:MUT,marginBottom:6}}>⏳ جاري البحث...</div>}
+            {!lookingUp&&errors.phone&&phone&&<div style={{fontSize:11,color:"#f87171",marginBottom:6}}>⚠️ رقم الهاتف غير صحيح</div>}
+            {!lookingUp&&phone&&validatePhone(phone)&&<div style={{fontSize:11,color:"#2D7A3A",marginBottom:6}}>✅ رقم صحيح</div>}
+            {isExisting&&<div style={{background:"#e8f5e9",borderRadius:10,padding:"8px 12px",marginBottom:8,fontSize:12,color:"#2D7A3A",fontWeight:700}}>✅ أهلاً بعودتك! — تم تحميل بياناتك</div>}
+            {memberId&&(
+              <div style={{background:LIGHT,borderRadius:10,padding:"10px 14px",marginBottom:10,border:`1px solid ${BDR}`,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                <span style={{fontSize:12,color:MUT,fontWeight:700}}>🆔 رقم عضويتك</span>
+                <span style={{fontWeight:900,fontSize:16,color:DARK}}>{memberId}</span>
+              </div>
+            )}
 
+            {/* Name */}
+            <label style={lbl}>الاسم *</label>
+            <input style={{...inp("name"),marginBottom:10,background:isExisting?"#f5f5f5":CARD}} placeholder="اسمك الكريم" value={name} readOnly={isExisting} onChange={e=>{if(!isExisting){setName(e.target.value);setErrors(r=>({...r,name:false}));}}}/>
+            {errors.name&&<div style={{fontSize:11,color:"#f87171",marginBottom:8}}>⚠️ الاسم مطلوب</div>}
             {/* Delivery or Pickup */}
             <label style={lbl}>طريقة الاستلام *</label>
             <div style={{display:"flex",gap:10,marginBottom:errors.delivery?6:16}}>
