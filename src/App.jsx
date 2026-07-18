@@ -85,101 +85,86 @@ export default function ClientOrderForm(){
   const [memberId,setMemberId]=useState(null);
   const [isExisting,setIsExisting]=useState(false);
   const [lookingUp,setLookingUp]=useState(false);
-  const [dataChanged,setDataChanged]=useState(false);
-  const [dataSaved,setDataSaved]=useState(false);
-  const [saving,setSaving]=useState(false);
 
-  // Save updated client data to Firebase
-  const saveClientData=async()=>{
-    setSaving(true);
-    try{
-      const r=await fetch(`${FIREBASE_URL}/db.json`);
-      const db=await r.json()||{};
-      const clients=db.clients||[];
-      const norm=normalizePhone(phone);
-      const updatedClients=clients.map(c=>
-        normalizePhone(c.phone)===norm||c.memberId===memberId
-          ?{...c,name,prefix,phone}
-          :c
-      );
-      await fetch(`${FIREBASE_URL}/db.json`,{
-        method:"PATCH",headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({clients:updatedClients})
-      });
-      setDataChanged(false);
-      setDataSaved(true);
-    }catch{}
-    setSaving(false);
-  };
+  // Normalize phone for comparison
+  const normalizePhone=p=>(p||"").replace(/[\s\-\+]/g,"").replace(/^0020/,"0").replace(/^20/,"0");
 
-  // Handle phone OR member ID lookup
-  const handlePhoneOrId=async(val)=>{
+  // Auto-fill from phone number
+  const handlePhone=async(val)=>{
     setPhone(val);
-    setDataChanged(false);
-    setDataSaved(false);
     const norm=normalizePhone(val);
-    const isMemberId=val.toUpperCase().startsWith("MBR-");
-
-    if(norm.length>=10||isMemberId){
+    if(norm.length>=10){
       setLookingUp(true);
       try{
         const r=await fetch(`${FIREBASE_URL}/db.json`);
         const db=await r.json()||{};
         const clients=db.clients||[];
 
-        // Read orders from BOTH locations (old = /orders root, new = /db/orders)
-        const dbOrders=Array.isArray(db.orders)?db.orders:Object.values(db.orders||{});
-        const rootOrdersRes=await fetch(`${FIREBASE_URL}/orders.json`);
-        const rootOrdersRaw=await rootOrdersRes.json()||{};
-        const rootOrders=Array.isArray(rootOrdersRaw)?rootOrdersRaw:Object.values(rootOrdersRaw);
-        const allOrders=[...dbOrders,...rootOrders].sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+        // Read from /db/orders AND root /orders
+        const dbOrdersRaw=db.orders||{};
+        const dbOrders=Array.isArray(dbOrdersRaw)?dbOrdersRaw:Object.values(dbOrdersRaw);
+        const rootRes=await fetch(`${FIREBASE_URL}/orders.json`);
+        const rootRaw=await rootRes.json()||{};
+        const rootOrders=Array.isArray(rootRaw)?rootRaw:Object.values(rootRaw);
+        const orders=[...dbOrders,...rootOrders].filter(o=>o&&o.phone).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
 
-        let found=isMemberId
-          ?clients.find(c=>c.memberId?.toUpperCase()===val.toUpperCase())
-          :clients.find(c=>normalizePhone(c.phone)===norm);
-
-        let prevOrder=isMemberId
-          ?allOrders.find(o=>o.memberId?.toUpperCase()===val.toUpperCase())
-          :allOrders.find(o=>normalizePhone(o.phone)===norm);
+        const found=clients.find(c=>normalizePhone(c.phone)===norm);
+        const prevOrder=orders.find(o=>normalizePhone(o.phone)===norm);
 
         if(found||prevOrder){
           const cData=found||{};
           const oData=prevOrder||{};
+
           const autoName=cData.name||oData.client||oData.name||"";
           setName(autoName);
-          if(!isMemberId) setPhone(val);
-          else setPhone(cData.phone||oData.phone||"");
           if(cData.prefix||oData.prefix) setPrefix(cData.prefix||oData.prefix||"");
-          if(oData.gov) setGov(oData.gov);
-          if(oData.area) setArea(oData.area);
-          if(oData.building) setBuilding(oData.building||"");
-          if(oData.aptNum) setAptNum(oData.aptNum||"");
-          if(oData.floor) setFloor(oData.floor||"");
-          if(oData.street) setStreet(oData.street||"");
-          if(oData.extra) setExtra(oData.extra||"");
-          if(oData.propType) setPropType(oData.propType||"apt");
 
-          let mId=cData.memberId||oData.memberId||null;
+          if(oData.gov){setGov(oData.gov);}
+          if(oData.area){setArea(oData.area);}
+          if(oData.building){setBuilding(oData.building||"");}
+          if(oData.aptNum){setAptNum(oData.aptNum||"");}
+          if(oData.floor){setFloor(oData.floor||"");}
+          if(oData.street){setStreet(oData.street||"");}
+          if(oData.extra){setExtra(oData.extra||"");}
+          if(oData.propType){setPropType(oData.propType||"apt");}
+
+          let mId=cData.memberId||null;
           if(!mId){
-            const nums=clients.map(c=>parseInt(c.memberId?.replace("MBR-",""))||0);
-            const next=nums.length>0?Math.max(...nums)+1:1;
-            mId=`MBR-${String(next).padStart(3,"0")}`;
+            // Generate unique member ID using max existing + timestamp suffix to avoid race conditions
+            const allIds=clients.map(c=>parseInt(c.memberId?.replace("MBR-",""))||0);
+            const maxId=allIds.length>0?Math.max(...allIds):0;
+            const uniqueSuffix=Date.now()%100; // Add uniqueness
+            const newNum=maxId+1;
+            mId=`MBR-${String(newNum).padStart(3,"0")}`;
+            // Verify it doesn't exist already, if so use timestamp
+            if(clients.find(c=>c.memberId===mId)){
+              mId=`MBR-${String(maxId+1+uniqueSuffix).padStart(3,"0")}`;
+            }
             const upd=found
-              ?clients.map(c=>normalizePhone(c.phone)===norm?{...c,memberId:mId}:c)
+              ?clients.map(c=>normalizePhone(c.phone)===norm?{...c,memberId:mId,name:autoName||c.name}:c)
               :[...clients,{id:"C-"+Date.now(),memberId:mId,name:autoName,phone:val,joinedAt:Date.now(),totalOrders:0,totalSpent:0}];
             fetch(`${FIREBASE_URL}/db.json`,{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({clients:upd})});
           }
           setMemberId(mId);
           setIsExisting(true);
         }else{
-          const nums=clients.map(c=>parseInt(c.memberId?.replace("MBR-",""))||0);
-          const next=nums.length>0?Math.max(...nums)+1:1;
-          setMemberId(`MBR-${String(next).padStart(3,"0")}`);
+          // New client — generate unique member ID
+          try{
+            const allIds=clients.map(c=>parseInt(c.memberId?.replace("MBR-",""))||0);
+            const maxId=allIds.length>0?Math.max(...allIds):0;
+            let newMId=`MBR-${String(maxId+1).padStart(3,"0")}`;
+            if(clients.find(c=>c.memberId===newMId)){
+              newMId=`MBR-${String(maxId+1+Date.now()%100).padStart(3,"0")}`;
+            }
+            setMemberId(newMId);
+          }catch{
+            setMemberId(`MBR-${String(Date.now()).slice(-4)}`);
+          }
           setIsExisting(false);
           setName("");
         }
       }catch{
-        setMemberId(`MBR-${String(Date.now()).slice(-4)}`);
+        setMemberId(`MBR-${String(Date.now()).slice(-3)}`);
         setIsExisting(false);
       }
       setLookingUp(false);
@@ -403,9 +388,9 @@ ${itemLines}
             </select>
 
             {/* Phone first */}
-            <label style={lbl}>رقم الهاتف أو رقم العضوية *</label>
-            <input style={{...inp("phone"),marginBottom:4}} placeholder="01XXXXXXXXX أو MBR-001" type="text" value={phone}
-              onChange={e=>handlePhoneOrId(e.target.value)}/>
+            <label style={lbl}>رقم الهاتف *</label>
+            <input style={{...inp("phone"),marginBottom:4}} placeholder="01XXXXXXXXX" type="tel" value={phone}
+              onChange={e=>handlePhone(e.target.value)}/>
             {lookingUp&&<div style={{fontSize:11,color:MUT,marginBottom:6}}>⏳ جاري البحث...</div>}
             {!lookingUp&&errors.phone&&phone&&<div style={{fontSize:11,color:"#f87171",marginBottom:6}}>⚠️ رقم الهاتف غير صحيح</div>}
             {!lookingUp&&phone&&validatePhone(phone)&&<div style={{fontSize:11,color:"#2D7A3A",marginBottom:6}}>✅ رقم صحيح</div>}
@@ -434,7 +419,7 @@ ${itemLines}
             {/* Name — always shown, auto-filled if existing */}
             <label style={lbl}>الاسم *</label>
             <input style={{...inp("name"),marginBottom:10}} placeholder="اسمك الكريم" value={name}
-              onChange={e=>{setName(e.target.value);setErrors(r=>({...r,name:false}));setDataChanged(true);setDataSaved(false);}}/> 
+              onChange={e=>{setName(e.target.value);setErrors(r=>({...r,name:false}));}}/>
             {errors.name&&<div style={{fontSize:11,color:"#f87171",marginBottom:8}}>⚠️ الاسم مطلوب</div>}
             {/* Delivery or Pickup */}
             <label style={lbl}>طريقة الاستلام *</label>
@@ -450,23 +435,20 @@ ${itemLines}
             </div>
             {errors.delivery&&<div style={{fontSize:11,color:"#f87171",marginBottom:12}}>⚠️ اختر طريقة الاستلام</div>}
 
-            {dataSaved&&<div style={{background:"#e8f5e9",borderRadius:10,padding:"8px 12px",marginBottom:8,fontSize:12,color:"#2D7A3A",fontWeight:700}}>✅ تم حفظ البيانات!</div>}
-
-            {dataChanged&&!dataSaved
-              ?<button onClick={saveClientData} disabled={saving}
-                style={{width:"100%",background:saving?"#C8A060":"#2D7A3A",color:"#fff",border:"none",borderRadius:14,padding:"15px",fontWeight:900,fontSize:15,fontFamily:"'Cairo',sans-serif",cursor:saving?"not-allowed":"pointer"}}>
-                {saving?"⏳ جاري الحفظ...":"💾 حفظ البيانات"}
-              </button>
-              :<button onClick={()=>{
-                if(validateStep1()){
-                  if(isExisting){setStep(3);}
-                  else if(delivery==="pickup"){setStep(3);}
-                  else{setStep(2);}
+            <button onClick={()=>{
+              if(validateStep1()){
+                if(isExisting){
+                  setStep(3); // Existing client — skip address, go directly to order
+                }else if(delivery==="pickup"){
+                  setStep(3); // Pickup — no address needed
+                }else{
+                  setStep(2); // New client with delivery — enter address
                 }
-              }} style={{width:"100%",background:GOLD,color:"#fff",border:"none",borderRadius:14,padding:"15px",fontWeight:900,fontSize:15,fontFamily:"'Cairo',sans-serif",cursor:"pointer"}}>
-                التالي ←
-              </button>
-            }
+              }
+            }}
+              style={{width:"100%",background:GOLD,color:"#000",border:"none",borderRadius:14,padding:"15px",fontWeight:900,fontSize:16,fontFamily:"'Cairo',sans-serif",cursor:"pointer",boxShadow:`0 8px 24px ${GOLD}44`}}>
+              التالي ←
+            </button>
           </div>
         )}
 
