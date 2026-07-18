@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 
 const IMG_DATA = {
   whole: "data:image/jpeg;base64,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",
@@ -88,6 +88,7 @@ export default function ClientOrderForm(){
   const [dataChanged,setDataChanged]=useState(false);
   const [dataSaved,setDataSaved]=useState(false);
   const [saving,setSaving]=useState(false);
+  const lookupRef=React.useRef(0); // Track latest lookup to avoid race conditions
 
   // Save updated client data
   const saveClientData=async()=>{
@@ -169,10 +170,18 @@ export default function ClientOrderForm(){
   const handlePhone=async(val)=>{
     setPhone(val);
     const norm=normalizePhone(val);
+
+    // Increment lookup ID — if a newer lookup starts, this one's results are ignored
+    const myLookupId=++lookupRef.current;
+
     if(norm.length>=10){
       setLookingUp(true);
       try{
         const{clients,allOrders}=await loadAllOrders();
+
+        // If a newer lookup started, ignore this result
+        if(myLookupId!==lookupRef.current) return;
+
         const found=clients.find(c=>normalizePhone(c.phone)===norm);
         const prevOrder=allOrders.find(o=>normalizePhone(o.phone)===norm);
         if(found||prevOrder){
@@ -191,26 +200,26 @@ export default function ClientOrderForm(){
           }
           fillFromData(cData,oData,mId);
         }else{
-          try{
-            const{clients:cl}=await loadAllOrders();
-            const allIds=cl.map(c=>parseInt(c.memberId?.replace("MBR-",""))||0);
-            const maxId=allIds.length>0?Math.max(...allIds):0;
-            let newMId=`MBR-${String(maxId+1).padStart(3,"0")}`;
-            if(cl.find(c=>c.memberId===newMId)) newMId=`MBR-${String(maxId+1+Date.now()%100).padStart(3,"0")}`;
-            setMemberId(newMId);
-          }catch{ setMemberId(`MBR-${String(Date.now()).slice(-4)}`); }
+          if(myLookupId!==lookupRef.current) return;
+          const allIds=clients.map(c=>parseInt(c.memberId?.replace("MBR-",""))||0);
+          const maxId=allIds.length>0?Math.max(...allIds):0;
+          let newMId=`MBR-${String(maxId+1).padStart(3,"0")}`;
+          if(clients.find(c=>c.memberId===newMId)) newMId=`MBR-${String(maxId+1+Date.now()%100).padStart(3,"0")}`;
+          setMemberId(newMId);
           setIsExisting(false);
           setName("");
         }
       }catch{
+        if(myLookupId!==lookupRef.current) return;
         setMemberId(`MBR-${String(Date.now()).slice(-3)}`);
         setIsExisting(false);
       }
-      setLookingUp(false);
+      if(myLookupId===lookupRef.current) setLookingUp(false);
     }else{
       setMemberId(null);
       setIsExisting(false);
       setName("");
+      setLookingUp(false);
     }
   };
 
