@@ -108,6 +108,60 @@ export default function ClientOrderForm(){
     setSaving(false);
   };
 
+  // Helper to load all orders from both locations
+  const loadAllOrders=async()=>{
+    const r=await fetch(`${FIREBASE_URL}/db.json`);
+    const db=await r.json()||{};
+    const clients=db.clients||[];
+    const dbOrdersRaw=db.orders||{};
+    const dbOrders=Array.isArray(dbOrdersRaw)?dbOrdersRaw:Object.values(dbOrdersRaw);
+    const rootRes=await fetch(`${FIREBASE_URL}/orders.json`);
+    const rootRaw=await rootRes.json()||{};
+    const rootOrders=Array.isArray(rootRaw)?rootRaw:Object.values(rootRaw);
+    const allOrders=[...dbOrders,...rootOrders].filter(o=>o&&o.phone).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+    return{clients,allOrders};
+  };
+
+  // Fill form from found client/order data
+  const fillFromData=(cData,oData,mId)=>{
+    const autoName=cData.name||oData.client||oData.name||"";
+    setName(autoName);
+    if(cData.prefix||oData.prefix) setPrefix(cData.prefix||oData.prefix||"");
+    if(oData.gov) setGov(oData.gov);
+    if(oData.area) setArea(oData.area);
+    if(oData.building) setBuilding(oData.building||"");
+    if(oData.aptNum) setAptNum(oData.aptNum||"");
+    if(oData.floor) setFloor(oData.floor||"");
+    if(oData.street) setStreet(oData.street||"");
+    if(oData.extra) setExtra(oData.extra||"");
+    if(oData.propType) setPropType(oData.propType||"apt");
+    setMemberId(mId);
+    setIsExisting(true);
+  };
+
+  // Lookup by member ID
+  const handleMemberId=async(val)=>{
+    if(val.length<5) return;
+    setLookingUp(true);
+    try{
+      const{clients,allOrders}=await loadAllOrders();
+      const found=clients.find(c=>c.memberId?.toUpperCase()===val.toUpperCase());
+      const prevOrder=allOrders.find(o=>o.memberId?.toUpperCase()===val.toUpperCase());
+      if(found||prevOrder){
+        const cData=found||{};
+        const oData=prevOrder||{};
+        if(cData.phone||oData.phone) setPhone(cData.phone||oData.phone||"");
+        const mId=cData.memberId||oData.memberId||val;
+        fillFromData(cData,oData,mId);
+      }else{
+        setIsExisting(false);
+        setName("");
+        setMemberId(null);
+      }
+    }catch{ setIsExisting(false); }
+    setLookingUp(false);
+  };
+
   // Normalize phone for comparison
   const normalizePhone=p=>(p||"").replace(/[\s\-\+]/g,"").replace(/^0020/,"0").replace(/^20/,"0");
 
@@ -118,70 +172,33 @@ export default function ClientOrderForm(){
     if(norm.length>=10){
       setLookingUp(true);
       try{
-        const r=await fetch(`${FIREBASE_URL}/db.json`);
-        const db=await r.json()||{};
-        const clients=db.clients||[];
-
-        // Read from /db/orders AND root /orders
-        const dbOrdersRaw=db.orders||{};
-        const dbOrders=Array.isArray(dbOrdersRaw)?dbOrdersRaw:Object.values(dbOrdersRaw);
-        const rootRes=await fetch(`${FIREBASE_URL}/orders.json`);
-        const rootRaw=await rootRes.json()||{};
-        const rootOrders=Array.isArray(rootRaw)?rootRaw:Object.values(rootRaw);
-        const orders=[...dbOrders,...rootOrders].filter(o=>o&&o.phone).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
-
+        const{clients,allOrders}=await loadAllOrders();
         const found=clients.find(c=>normalizePhone(c.phone)===norm);
-        const prevOrder=orders.find(o=>normalizePhone(o.phone)===norm);
-
+        const prevOrder=allOrders.find(o=>normalizePhone(o.phone)===norm);
         if(found||prevOrder){
           const cData=found||{};
           const oData=prevOrder||{};
-
-          const autoName=cData.name||oData.client||oData.name||"";
-          setName(autoName);
-          if(cData.prefix||oData.prefix) setPrefix(cData.prefix||oData.prefix||"");
-
-          if(oData.gov){setGov(oData.gov);}
-          if(oData.area){setArea(oData.area);}
-          if(oData.building){setBuilding(oData.building||"");}
-          if(oData.aptNum){setAptNum(oData.aptNum||"");}
-          if(oData.floor){setFloor(oData.floor||"");}
-          if(oData.street){setStreet(oData.street||"");}
-          if(oData.extra){setExtra(oData.extra||"");}
-          if(oData.propType){setPropType(oData.propType||"apt");}
-
-          let mId=cData.memberId||null;
+          let mId=cData.memberId||oData.memberId||null;
           if(!mId){
-            // Generate unique member ID using max existing + timestamp suffix to avoid race conditions
             const allIds=clients.map(c=>parseInt(c.memberId?.replace("MBR-",""))||0);
             const maxId=allIds.length>0?Math.max(...allIds):0;
-            const uniqueSuffix=Date.now()%100; // Add uniqueness
-            const newNum=maxId+1;
-            mId=`MBR-${String(newNum).padStart(3,"0")}`;
-            // Verify it doesn't exist already, if so use timestamp
-            if(clients.find(c=>c.memberId===mId)){
-              mId=`MBR-${String(maxId+1+uniqueSuffix).padStart(3,"0")}`;
-            }
+            mId=`MBR-${String(maxId+1).padStart(3,"0")}`;
+            if(clients.find(c=>c.memberId===mId)) mId=`MBR-${String(maxId+1+Date.now()%100).padStart(3,"0")}`;
             const upd=found
-              ?clients.map(c=>normalizePhone(c.phone)===norm?{...c,memberId:mId,name:autoName||c.name}:c)
-              :[...clients,{id:"C-"+Date.now(),memberId:mId,name:autoName,phone:val,joinedAt:Date.now(),totalOrders:0,totalSpent:0}];
+              ?clients.map(c=>normalizePhone(c.phone)===norm?{...c,memberId:mId}:c)
+              :[...clients,{id:"C-"+Date.now(),memberId:mId,name:cData.name||oData.client||"",phone:val,joinedAt:Date.now(),totalOrders:0,totalSpent:0}];
             fetch(`${FIREBASE_URL}/db.json`,{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({clients:upd})});
           }
-          setMemberId(mId);
-          setIsExisting(true);
+          fillFromData(cData,oData,mId);
         }else{
-          // New client — generate unique member ID
           try{
-            const allIds=clients.map(c=>parseInt(c.memberId?.replace("MBR-",""))||0);
+            const{clients:cl}=await loadAllOrders();
+            const allIds=cl.map(c=>parseInt(c.memberId?.replace("MBR-",""))||0);
             const maxId=allIds.length>0?Math.max(...allIds):0;
             let newMId=`MBR-${String(maxId+1).padStart(3,"0")}`;
-            if(clients.find(c=>c.memberId===newMId)){
-              newMId=`MBR-${String(maxId+1+Date.now()%100).padStart(3,"0")}`;
-            }
+            if(cl.find(c=>c.memberId===newMId)) newMId=`MBR-${String(maxId+1+Date.now()%100).padStart(3,"0")}`;
             setMemberId(newMId);
-          }catch{
-            setMemberId(`MBR-${String(Date.now()).slice(-4)}`);
-          }
+          }catch{ setMemberId(`MBR-${String(Date.now()).slice(-4)}`); }
           setIsExisting(false);
           setName("");
         }
@@ -410,9 +427,19 @@ ${itemLines}
             </select>
 
             {/* Phone first */}
-            <label style={lbl}>رقم الهاتف *</label>
-            <input style={{...inp("phone"),marginBottom:4}} placeholder="01XXXXXXXXX" type="tel" value={phone}
-              onChange={e=>handlePhone(e.target.value)}/>
+            <label style={lbl}>رقم الهاتف * أو رقم العضوية</label>
+            <input style={{...inp("phone"),marginBottom:4}} placeholder="01XXXXXXXXX أو MBR-001" type="text" value={phone}
+              onChange={e=>{
+                const v=e.target.value;
+                const isMbr=v.toUpperCase().startsWith("MBR-");
+                setDataChanged(false);setDataSaved(false);
+                if(isMbr){
+                  setPhone(v);
+                  handleMemberId(v);
+                }else{
+                  handlePhone(v);
+                }
+              }}/>
             {lookingUp&&<div style={{fontSize:11,color:MUT,marginBottom:6}}>⏳ جاري البحث...</div>}
             {!lookingUp&&errors.phone&&phone&&<div style={{fontSize:11,color:"#f87171",marginBottom:6}}>⚠️ رقم الهاتف غير صحيح</div>}
             {!lookingUp&&phone&&validatePhone(phone)&&<div style={{fontSize:11,color:"#2D7A3A",marginBottom:6}}>✅ رقم صحيح</div>}
