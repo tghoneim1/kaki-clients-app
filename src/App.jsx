@@ -126,15 +126,21 @@ export default function ClientOrderForm(){
         const r=await fetch(`${FIREBASE_URL}/db.json`);
         const db=await r.json()||{};
         const clients=db.clients||[];
-        const orders=[...(db.orders||[])].sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+
+        // Read orders from BOTH locations (old = /orders root, new = /db/orders)
+        const dbOrders=Array.isArray(db.orders)?db.orders:Object.values(db.orders||{});
+        const rootOrdersRes=await fetch(`${FIREBASE_URL}/orders.json`);
+        const rootOrdersRaw=await rootOrdersRes.json()||{};
+        const rootOrders=Array.isArray(rootOrdersRaw)?rootOrdersRaw:Object.values(rootOrdersRaw);
+        const allOrders=[...dbOrders,...rootOrders].sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
 
         let found=isMemberId
           ?clients.find(c=>c.memberId?.toUpperCase()===val.toUpperCase())
           :clients.find(c=>normalizePhone(c.phone)===norm);
 
         let prevOrder=isMemberId
-          ?orders.find(o=>o.memberId?.toUpperCase()===val.toUpperCase())
-          :orders.find(o=>normalizePhone(o.phone)===norm);
+          ?allOrders.find(o=>o.memberId?.toUpperCase()===val.toUpperCase())
+          :allOrders.find(o=>normalizePhone(o.phone)===norm);
 
         if(found||prevOrder){
           const cData=found||{};
