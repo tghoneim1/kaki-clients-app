@@ -85,6 +85,28 @@ export default function ClientOrderForm(){
   const [memberId,setMemberId]=useState(null);
   const [isExisting,setIsExisting]=useState(false);
   const [lookingUp,setLookingUp]=useState(false);
+  const [dataChanged,setDataChanged]=useState(false);
+  const [dataSaved,setDataSaved]=useState(false);
+  const [saving,setSaving]=useState(false);
+
+  // Save updated client data
+  const saveClientData=async()=>{
+    setSaving(true);
+    try{
+      const r=await fetch(`${FIREBASE_URL}/db.json`);
+      const db=await r.json()||{};
+      const clients=db.clients||[];
+      const norm=normalizePhone(phone);
+      const exists=clients.find(c=>normalizePhone(c.phone)===norm||c.memberId===memberId);
+      const updatedClients=exists
+        ?clients.map(c=>normalizePhone(c.phone)===norm||c.memberId===memberId?{...c,name,prefix,phone}:c)
+        :[...clients,{id:"C-"+Date.now(),memberId,name,prefix,phone,joinedAt:Date.now(),totalOrders:0,totalSpent:0}];
+      await fetch(`${FIREBASE_URL}/db.json`,{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({clients:updatedClients})});
+      setDataChanged(false);
+      setDataSaved(true);
+    }catch{}
+    setSaving(false);
+  };
 
   // Normalize phone for comparison
   const normalizePhone=p=>(p||"").replace(/[\s\-\+]/g,"").replace(/^0020/,"0").replace(/^20/,"0");
@@ -419,7 +441,7 @@ ${itemLines}
             {/* Name — always shown, auto-filled if existing */}
             <label style={lbl}>الاسم *</label>
             <input style={{...inp("name"),marginBottom:10}} placeholder="اسمك الكريم" value={name}
-              onChange={e=>{setName(e.target.value);setErrors(r=>({...r,name:false}));}}/>
+              onChange={e=>{setName(e.target.value);setErrors(r=>({...r,name:false}));if(isExisting){setDataChanged(true);setDataSaved(false);}}}/>
             {errors.name&&<div style={{fontSize:11,color:"#f87171",marginBottom:8}}>⚠️ الاسم مطلوب</div>}
             {/* Delivery or Pickup */}
             <label style={lbl}>طريقة الاستلام *</label>
@@ -435,20 +457,23 @@ ${itemLines}
             </div>
             {errors.delivery&&<div style={{fontSize:11,color:"#f87171",marginBottom:12}}>⚠️ اختر طريقة الاستلام</div>}
 
-            <button onClick={()=>{
-              if(validateStep1()){
-                if(isExisting){
-                  setStep(3); // Existing client — skip address, go directly to order
-                }else if(delivery==="pickup"){
-                  setStep(3); // Pickup — no address needed
-                }else{
-                  setStep(2); // New client with delivery — enter address
+            {dataSaved&&<div style={{background:"#e8f5e9",borderRadius:10,padding:"8px 12px",marginBottom:8,fontSize:12,color:"#2D7A3A",fontWeight:700,textAlign:"center"}}>✅ تم حفظ البيانات!</div>}
+
+            {dataChanged&&!dataSaved
+              ?<button onClick={saveClientData} disabled={saving}
+                style={{width:"100%",background:saving?"#999":"#2D7A3A",color:"#fff",border:"none",borderRadius:14,padding:"15px",fontWeight:900,fontSize:15,fontFamily:"'Cairo',sans-serif",cursor:saving?"not-allowed":"pointer"}}>
+                {saving?"⏳ جاري الحفظ...":"💾 حفظ البيانات"}
+              </button>
+              :<button onClick={()=>{
+                if(validateStep1()){
+                  if(isExisting){setStep(3);}
+                  else if(delivery==="pickup"){setStep(3);}
+                  else{setStep(2);}
                 }
-              }
-            }}
-              style={{width:"100%",background:GOLD,color:"#000",border:"none",borderRadius:14,padding:"15px",fontWeight:900,fontSize:16,fontFamily:"'Cairo',sans-serif",cursor:"pointer",boxShadow:`0 8px 24px ${GOLD}44`}}>
-              التالي ←
-            </button>
+              }} style={{width:"100%",background:GOLD,color:"#000",border:"none",borderRadius:14,padding:"15px",fontWeight:900,fontSize:16,fontFamily:"'Cairo',sans-serif",cursor:"pointer",boxShadow:`0 8px 24px ${GOLD}44`}}>
+                التالي ←
+              </button>
+            }
           </div>
         )}
 
