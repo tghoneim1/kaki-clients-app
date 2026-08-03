@@ -14,7 +14,7 @@ const IMG_DATA = {
 };
 
 const PRODUCTS = [
-  { id:"shamoort",      name:" (شامورط) (750-1000 جم)", emoji:"🐣", price:150, unit:"فرخة", qtyLabel:"فرخة" },
+  { id:"shamoort",      name:"حمام كداب (شامورط) (750-1000 جم)", emoji:"🐣", price:150, unit:"فرخة", qtyLabel:"فرخة" },
   { id:"whole",         name:"فرخة كاملة (1600-1800 جم)",         emoji:"🐔", price:342, unit:"فرخة", qtyLabel:"فرخة" },
   { id:"breast_full",   name:"صدور بالعظام",                      emoji:"🥩", price:250, unit:"كج" },
   { id:"breast_deb",    name:"صدور مخلية بدون دهون",              emoji:"🥩", price:390, unit:"كج" },
@@ -278,33 +278,32 @@ export default function ClientOrderForm(){
 
           let mId=cData.memberId||null;
           if(!mId){
-            // Generate unique member ID using max existing + timestamp suffix to avoid race conditions
-            const allIds=clients.map(c=>parseInt(c.memberId?.replace("MBR-",""))||0);
-            const maxId=allIds.length>0?Math.max(...allIds):0;
-            const uniqueSuffix=Date.now()%100; // Add uniqueness
-            const newNum=maxId+1;
-            mId=`MBR-${String(newNum).padStart(3,"0")}`;
-            // Verify it doesn't exist already, if so use timestamp
-            if(clients.find(c=>c.memberId===mId)){
-              mId=`MBR-${String(maxId+1+uniqueSuffix).padStart(3,"0")}`;
-            }
+            // Re-fetch latest clients to get accurate max (avoid race condition)
+            const freshR=await fetch(`${FIREBASE_URL}/db.json`);
+            const freshDb=await freshR.json()||{};
+            const freshClients=freshDb.clients||[];
+            const allIds=freshClients.map(c=>parseInt(c.memberId?.replace("MBR-",""))||0);
+            let next=(allIds.length>0?Math.max(...allIds):0)+1;
+            // Keep incrementing until we find one that's definitely not taken
+            while(freshClients.some(c=>c.memberId===`MBR-${String(next).padStart(3,"0")}`)) next++;
+            mId=`MBR-${String(next).padStart(3,"0")}`;
             const upd=found
-              ?clients.map(c=>normalizePhone(c.phone)===norm?{...c,memberId:mId,name:autoName||c.name}:c)
-              :[...clients,{id:"C-"+Date.now(),memberId:mId,name:autoName,phone:val,joinedAt:Date.now(),totalOrders:0,totalSpent:0}];
-            fetch(`${FIREBASE_URL}/db.json`,{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({clients:upd})});
+              ?freshClients.map(c=>normalizePhone(c.phone)===norm?{...c,memberId:mId,name:autoName||c.name}:c)
+              :[...freshClients,{id:"C-"+Date.now(),memberId:mId,name:autoName,phone:val,joinedAt:Date.now(),totalOrders:0,totalSpent:0}];
+            await fetch(`${FIREBASE_URL}/db.json`,{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({clients:upd})});
           }
           setMemberId(mId);
           setIsExisting(true);
         }else{
-          // New client — generate unique member ID
+          // New client — generate unique member ID from fresh Firebase data
           try{
-            const allIds=clients.map(c=>parseInt(c.memberId?.replace("MBR-",""))||0);
-            const maxId=allIds.length>0?Math.max(...allIds):0;
-            let newMId=`MBR-${String(maxId+1).padStart(3,"0")}`;
-            if(clients.find(c=>c.memberId===newMId)){
-              newMId=`MBR-${String(maxId+1+Date.now()%100).padStart(3,"0")}`;
-            }
-            setMemberId(newMId);
+            const freshR=await fetch(`${FIREBASE_URL}/db.json`);
+            const freshDb=await freshR.json()||{};
+            const freshClients=freshDb.clients||[];
+            const allIds=freshClients.map(c=>parseInt(c.memberId?.replace("MBR-",""))||0);
+            let next=(allIds.length>0?Math.max(...allIds):0)+1;
+            while(freshClients.some(c=>c.memberId===`MBR-${String(next).padStart(3,"0")}`)) next++;
+            setMemberId(`MBR-${String(next).padStart(3,"0")}`);
           }catch{
             setMemberId(`MBR-${String(Date.now()).slice(-4)}`);
           }
