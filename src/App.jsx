@@ -182,6 +182,40 @@ export default function ClientOrderForm(){
   const [lookingUp,setLookingUp]=useState(false);
 
   // Normalize phone for comparison
+  // Lookup by member ID
+  const handleMemberId=async(val)=>{
+    if(val.length<5) return;
+    setLookingUp(true);
+    try{
+      const r=await fetch(`${FIREBASE_URL}/db.json`);
+      const db=await r.json()||{};
+      const clients=db.clients||[];
+      const dbOrdersRaw=db.orders||{};
+      const dbOrders=Array.isArray(dbOrdersRaw)?dbOrdersRaw:Object.values(dbOrdersRaw);
+      const rootRes=await fetch(`${FIREBASE_URL}/orders.json`);
+      const rootRaw=await rootRes.json()||{};
+      const rootOrders=Array.isArray(rootRaw)?rootRaw:Object.values(rootRaw);
+      const allOrders=[...dbOrders,...rootOrders].filter(o=>o&&o.phone).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+      const found=clients.find(c=>c.memberId?.toUpperCase()===val.toUpperCase());
+      const prevOrder=allOrders.find(o=>o.memberId?.toUpperCase()===val.toUpperCase());
+      if(found||prevOrder){
+        const cData=found||{};const oData=prevOrder||{};
+        if(cData.phone||oData.phone) setPhone(cData.phone||oData.phone||"");
+        setName(cData.name||oData.client||oData.name||"");
+        if(cData.prefix||oData.prefix) setPrefix(cData.prefix||oData.prefix||"");
+        if(oData.gov){setGov(oData.gov);setArea(oData.area||"");}
+        if(oData.building) setBuilding(oData.building||"");
+        if(oData.aptNum) setAptNum(oData.aptNum||"");
+        if(oData.floor) setFloor(oData.floor||"");
+        if(oData.street) setStreet(oData.street||"");
+        if(oData.extra) setExtra(oData.extra||"");
+        setMemberId(cData.memberId||oData.memberId||val);
+        setIsExisting(true);
+      }else{setIsExisting(false);setName("");setMemberId(null);}
+    }catch{setIsExisting(false);}
+    setLookingUp(false);
+  };
+
   const normalizePhone=p=>(p||"").replace(/[\s\-\+]/g,"").replace(/^0020/,"0").replace(/^20/,"0");
 
   // Auto-fill from phone number
@@ -529,7 +563,7 @@ ${itemLines}
             {/* Next → بياناتك */}
             <button onClick={()=>{if(validateStep3())setStep(2);}}
               style={{width:"100%",background:GOLD,color:"#000",border:"none",borderRadius:14,padding:"15px",fontWeight:900,fontSize:16,fontFamily:"'Cairo',sans-serif",cursor:"pointer",boxShadow:`0 8px 24px ${GOLD}44`}}>
-              {t.reviewBtn}
+              {t.nextBtn}
             </button>
           </div>
         )}
