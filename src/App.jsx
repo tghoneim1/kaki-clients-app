@@ -158,7 +158,7 @@ export default function ClientOrderForm(){
   const [prefix,setPrefix]=useState("");
   const [name,setName]=useState("");
   const [phone,setPhone]=useState("");
-  const [delivery,setDelivery]=useState(null);
+  const [delivery,setDelivery]=useState("delivery");
   const [gov,setGov]=useState("");
   const [area,setArea]=useState("");
   const [propType,setPropType]=useState("apt");
@@ -340,15 +340,14 @@ export default function ClientOrderForm(){
 
   const validateStep1=()=>{
     const e={};
-    if(!isExisting&&!name.trim())e.name=true; // Name only required for new clients
+    if(!isExisting&&!name.trim())e.name=true;
     if(!phone.trim()||!validatePhone(phone))e.phone=true;
-    if(!delivery)e.delivery=true;
     setErrors(e);
     return Object.keys(e).length===0;
   };
 
   const validateStep2=()=>{
-    if(delivery==="pickup") return true;
+    if(delivery==="pickup"||!delivery) return true;
     const e={};
     if(!gov)e.gov=true;
     if(!area)e.area=true;
