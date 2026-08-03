@@ -155,6 +155,9 @@ export default function ClientOrderForm(){
   const [step,setStep]=useState(1);
   const [lang,setLang]=useState("AR");
   const lookupRef=React.useRef(0);
+  const [dataChanged,setDataChanged]=useState(false);
+  const [dataSaved,setDataSaved]=useState(false);
+  const [saving,setSaving]=useState(false);
   const [prefix,setPrefix]=useState("");
   const [name,setName]=useState("");
   const [phone,setPhone]=useState("");
@@ -182,6 +185,24 @@ export default function ClientOrderForm(){
   const [lookingUp,setLookingUp]=useState(false);
 
   // Normalize phone for comparison
+  // Save updated client data
+  const saveClientData=async()=>{
+    setSaving(true);
+    try{
+      const r=await fetch(`${FIREBASE_URL}/db.json`);
+      const db=await r.json()||{};
+      const clients=db.clients||[];
+      const norm=normalizePhone(phone);
+      const exists=clients.find(c=>normalizePhone(c.phone)===norm||c.memberId===memberId);
+      const updatedClients=exists
+        ?clients.map(c=>normalizePhone(c.phone)===norm||c.memberId===memberId?{...c,name,prefix,phone}:c)
+        :[...clients,{id:"C-"+Date.now(),memberId,name,prefix,phone,joinedAt:Date.now(),totalOrders:0,totalSpent:0}];
+      await fetch(`${FIREBASE_URL}/db.json`,{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({clients:updatedClients})});
+      setDataChanged(false);setDataSaved(true);
+    }catch{}
+    setSaving(false);
+  };
+
   // Lookup by member ID
   const handleMemberId=async(val)=>{
     if(val.length<5) return;
