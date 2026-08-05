@@ -28,6 +28,7 @@ const PRODUCTS = [
   { id:"chicken_wings",name:"أجنحة (تشيكن وينجز)",           emoji:"🍗", price:190,  unit:"كج" },
   { id:"shawarma",     name:"شاورمة بدون دهون",              emoji:"🌯", price:390,  unit:"كج" },
   { id:"liver",        name:"كبدة ك",                       emoji:"🫀", price:80,   unit:"كج" },
+  { id:"giblets",      name:"كبد وقوانص ك",                 emoji:"🫀", price:80,   unit:"كج" },
   { id:"gizzard",      name:"قوانص ك",                      emoji:"🫁", price:70,   unit:"كج" },
 ];
 
@@ -286,14 +287,15 @@ export default function ClientOrderForm(){
           setName(autoName);
           if(cData.prefix||oData.prefix) setPrefix(cData.prefix||oData.prefix||"");
 
-          // Address: always from most recent order
-          if(oData.gov)    {setGov(oData.gov);     setArea(oData.area||"");}
-          if(oData.building){setBuilding(oData.building||"");}
-          if(oData.aptNum)  {setAptNum(oData.aptNum||"");}
-          if(oData.floor)   {setFloor(oData.floor||"");}
-          if(oData.street)  {setStreet(oData.street||"");}
-          if(oData.extra)   {setExtra(oData.extra||"");}
-          if(oData.propType){setPropType(oData.propType||"apt");}
+          // Address: first try client record, then fall back to most recent order
+          const addrSrc = (cData.gov ? cData : null) || oData;
+          if(addrSrc.gov)    {setGov(addrSrc.gov);     setArea(addrSrc.area||"");}
+          if(addrSrc.building){setBuilding(addrSrc.building||"");}
+          if(addrSrc.aptNum)  {setAptNum(addrSrc.aptNum||"");}
+          if(addrSrc.floor)   {setFloor(addrSrc.floor||"");}
+          if(addrSrc.street)  {setStreet(addrSrc.street||"");}
+          if(addrSrc.extra)   {setExtra(addrSrc.extra||"");}
+          if(addrSrc.propType){setPropType(addrSrc.propType||"apt");}
 
           let mId=cData.memberId||null;
           if(!mId){
