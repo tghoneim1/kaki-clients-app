@@ -368,7 +368,15 @@ export default function ClientOrderForm(){
         const cycle=db.cycle||1;
         const cyclePrices=db.pricesByCycle?.[`cycle-${cycle}`]||db.prices||{};
         if(Object.keys(cyclePrices).length>0){
-          setProducts(PRODUCTS.map(p=>cyclePrices[p.id]?{...p,price:cyclePrices[p.id]}:p));
+          setProducts(PRODUCTS.map(p=>{
+            if(!cyclePrices[p.id]) return p;
+            const newPrice=cyclePrices[p.id];
+            if(p.byWeight){
+              // Weight-based: store pricePerKg and recalculate estimated price
+              return{...p,pricePerKg:newPrice,price:Math.round(newPrice*CHICKEN_AVG_WEIGHT)};
+            }
+            return{...p,price:newPrice};
+          }));
         }
       })
       .catch(()=>{});
@@ -415,7 +423,13 @@ export default function ClientOrderForm(){
 
   const add=id=>setItems(p=>({...p,[id]:(p[id]||0)+1}));
   const rem=id=>setItems(p=>{const n={...p};if(n[id]>1)n[id]--;else delete n[id];return n;});
-  const total=Object.entries(items).reduce((s,[id,q])=>{const p=products.find(x=>x.id===id);return s+(p?p.price*q:0);},0);
+  const total=Object.entries(items).reduce((s,[id,q])=>{
+    const p=products.find(x=>x.id===id);
+    if(!p) return s;
+    // For weight-based products use estimated price (pricePerKg × avgWeight)
+    const unitPrice=p.byWeight?Math.round((p.pricePerKg||CHICKEN_PRICE_PER_KG)*CHICKEN_AVG_WEIGHT):p.price;
+    return s+(unitPrice*q);
+  },0);
   const hasItems=Object.values(items).some(q=>q>0);
 
   const t=TRANS[lang];
@@ -589,10 +603,10 @@ ${itemLines}
                       <div style={{fontWeight:700,fontSize:13}}>{p.name}</div>
                       {p.byWeight
                         ?<div style={{fontSize:11,marginTop:2}}>
-                           <span style={{color:GOLD,fontWeight:700}}>{p.pricePerKg} ج.م/كج</span>
-                           <span style={{color:MUT}}> × {CHICKEN_AVG_WEIGHT}كج ≈ </span>
-                           <span style={{color:GOLD,fontWeight:900}}>{p.price} ج.م</span>
-                           <div style={{fontSize:9,color:MUT}}>السعر النهائي حسب الوزن الفعلي</div>
+                           <span style={{color:GOLD,fontWeight:700}}>{p.pricePerKg||CHICKEN_PRICE_PER_KG} ج.م/كج</span>
+                           <span style={{color:MUT}}> × {CHICKEN_AVG_WEIGHT} كج ≈ </span>
+                           <span style={{color:GOLD,fontWeight:900}}>{Math.round((p.pricePerKg||CHICKEN_PRICE_PER_KG)*CHICKEN_AVG_WEIGHT)} ج.م</span>
+                           <div style={{fontSize:9,color:MUT,marginTop:2}}>⚖️ السعر النهائي حسب الوزن عند الاستلام</div>
                          </div>
                         :<div style={{fontSize:12,color:GOLD,fontWeight:700,marginTop:2}}>ج.م {p.price} / {p.unit||"كج"}</div>
                       }
@@ -907,7 +921,7 @@ ${itemLines}
                     <div style={{fontSize:12,fontWeight:700,color:DARK}}>{p.name}</div>
                     <div style={{fontSize:11,color:MUT}}>× {items[p.id]} {p.unit||"كج"}</div>
                   </div>
-                  <span style={{color:GOLD,fontWeight:700,fontSize:13}}>ج.م {p.price*items[p.id]}</span>
+                  <span style={{color:GOLD,fontWeight:700,fontSize:13}}>ج.م {Math.round((p.byWeight?Math.round((p.pricePerKg||CHICKEN_PRICE_PER_KG)*CHICKEN_AVG_WEIGHT):p.price)*items[p.id])}</span>
                 </div>
               ))}
               <div style={{display:"flex",justifyContent:"space-between",marginTop:10,fontWeight:900,fontSize:16}}>
