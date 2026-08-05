@@ -31,14 +31,6 @@ const PRODUCTS = [
   { id:"giblets",      name:"كبد وقوانص ك",                 emoji:"🫀", price:80,   unit:"كج" },
   { id:"gizzard",      name:"قوانص ك",                      emoji:"🫁", price:70,   unit:"كج" },
 ];
-  { id:"breast_full",   name:"صدور بالعظام",                      emoji:"🥩", price:250, unit:"كج" },
-  { id:"breast_deb",    name:"صدور مخلية بدون دهون",              emoji:"🥩", price:390, unit:"كج" },
-  { id:"fillet",        name:"صدور فيليه (بانيه) بدون دهون",      emoji:"🥓", price:390, unit:"كج" },
-  { id:"shawarma",     name:"شاورمة بدون دهون",              emoji:"🌯", price:390,  unit:"كج" },
-  { id:"liver",        name:"كبدة ك",                       emoji:"🫀", price:80,   unit:"كج" },
-  { id:"giblets",      name:"كبد وقوانص ك",                 emoji:"🫀", price:80,   unit:"كج" },
-  { id:"gizzard",      name:"قوانص ك",                      emoji:"🫁", price:70,   unit:"كج" },
-];
 
 const AREAS = {
   "القاهرة": [
