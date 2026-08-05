@@ -28,7 +28,6 @@ const PRODUCTS = [
   { id:"chicken_wings",name:"أجنحة (تشيكن وينجز)",           emoji:"🍗", price:190,  unit:"كج" },
   { id:"shawarma",     name:"شاورمة بدون دهون",              emoji:"🌯", price:390,  unit:"كج" },
   { id:"liver",        name:"كبدة ك",                       emoji:"🫀", price:80,   unit:"كج" },
-  { id:"giblets",      name:"كبد وقوانص ك",                 emoji:"🫀", price:80,   unit:"كج" },
   { id:"gizzard",      name:"قوانص ك",                      emoji:"🫁", price:70,   unit:"كج" },
 ];
 
