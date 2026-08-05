@@ -248,17 +248,27 @@ export default function ClientOrderForm(){
   const handlePhone=async(val)=>{
     setPhone(val);
     const norm=normalizePhone(val);
+    const myId=++lookupRef.current; // Track this specific lookup
+
     if(norm.length>=10){
       setLookingUp(true);
       try{
         const r=await fetch(`${FIREBASE_URL}/db.json`);
         const db=await r.json()||{};
+
+        // If a newer lookup started while we were waiting — discard this result
+        if(myId!==lookupRef.current){setLookingUp(false);return;}
+
         const clients=db.clients||[];
         const dbOrdersRaw=db.orders||{};
         const dbOrders=Array.isArray(dbOrdersRaw)?dbOrdersRaw:Object.values(dbOrdersRaw);
         const rootRes=await fetch(`${FIREBASE_URL}/orders.json`);
         const rootRaw=await rootRes.json()||{};
         const rootOrders=Array.isArray(rootRaw)?rootRaw:Object.values(rootRaw);
+
+        // Check again after second fetch
+        if(myId!==lookupRef.current){setLookingUp(false);return;}
+
         const orders=[...dbOrders,...rootOrders].filter(o=>o&&o.phone).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
 
         const found=clients.find(c=>normalizePhone(c.phone)===norm);
@@ -323,6 +333,8 @@ export default function ClientOrderForm(){
           setMemberId(mId);
           setIsExisting(true);
         }else{
+          // Only update state if this is still the latest lookup
+          if(myId!==lookupRef.current){setLookingUp(false);return;}
           // New client — generate unique sequential ID using Firebase atomic counter
           try{
             let retries=3;
@@ -354,9 +366,13 @@ export default function ClientOrderForm(){
       }
       setLookingUp(false);
     }else{
-      setMemberId(null);
-      setIsExisting(false);
-      setName("");
+      // Only reset if no newer lookup is pending
+      if(myId===lookupRef.current){
+        setMemberId(null);
+        setIsExisting(false);
+        setName("");
+        setLookingUp(false);
+      }
     }
   };
 
