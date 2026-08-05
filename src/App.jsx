@@ -13,17 +13,31 @@ const IMG_DATA = {
   chicken_wings: "data:image/jpeg;base64,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",
 };
 
+const CHICKEN_PRICE_PER_KG=190;
+const CHICKEN_AVG_WEIGHT=1.6;
+
 const PRODUCTS = [
-  { id:"shamoort",      name:" (شامورط) (750-1000 جم)", emoji:"🐣", price:150, unit:"فرخة", qtyLabel:"فرخة" },
-  { id:"whole",         name:"فرخة كاملة (1600-1800 جم)",         emoji:"🐔", price:342, unit:"كج", qtyLabel:"فرخة" },
+  { id:"whole",        name:"فرخة كاملة",                   emoji:"🐔", price:Math.round(CHICKEN_PRICE_PER_KG*CHICKEN_AVG_WEIGHT), pricePerKg:CHICKEN_PRICE_PER_KG, unit:"فرخة", qtyLabel:"فرخة", byWeight:true },
+  { id:"shamoort",     name:"شامورط (750-1000 جم)",          emoji:"🐣", price:150,  unit:"فرخة", qtyLabel:"فرخة" },
+  { id:"breast_full",  name:"صدور بالعظام",                  emoji:"🥩", price:250,  unit:"كج" },
+  { id:"breast_deb",   name:"صدور مخلية بدون دهون",          emoji:"🥩", price:390,  unit:"كج" },
+  { id:"fillet",       name:"صدور فيليه (بانيه) بدون دهون",  emoji:"🥓", price:390,  unit:"كج" },
+  { id:"wings",        name:"وراك كاملة",                    emoji:"🍗", price:190,  unit:"كج" },
+  { id:"tips",         name:"دبابيس (كينتاكي)",              emoji:"🍖", price:275,  unit:"كج" },
+  { id:"shish",        name:"شيش طاوق بدون دهون",            emoji:"🍢", price:390,  unit:"كج" },
+  { id:"chicken_wings",name:"أجنحة (تشيكن وينجز)",           emoji:"🍗", price:190,  unit:"كج" },
+  { id:"shawarma",     name:"شاورمة بدون دهون",              emoji:"🌯", price:390,  unit:"كج" },
+  { id:"liver",        name:"كبدة ك",                       emoji:"🫀", price:80,   unit:"كج" },
+  { id:"giblets",      name:"كبد وقوانص ك",                 emoji:"🫀", price:80,   unit:"كج" },
+  { id:"gizzard",      name:"قوانص ك",                      emoji:"🫁", price:70,   unit:"كج" },
+];
   { id:"breast_full",   name:"صدور بالعظام",                      emoji:"🥩", price:250, unit:"كج" },
   { id:"breast_deb",    name:"صدور مخلية بدون دهون",              emoji:"🥩", price:390, unit:"كج" },
   { id:"fillet",        name:"صدور فيليه (بانيه) بدون دهون",      emoji:"🥓", price:390, unit:"كج" },
-  { id:"wings",         name:"وراك كاملة",                        emoji:"🍗", price:100, unit:"كج" },
-  { id:"tips",          name:"دبابيس (كينتاكي)",                   emoji:"🍖", price:100, unit:"كج" },
-  { id:"shish",         name:"شيش طاوق بدون دهون",                emoji:"🍢", price:390, unit:"كج" },
-  { id:"chicken_wings", name:"أجنحة (تشيكن وينجز)",               emoji:"🍗", price:120, unit:"كج" },
-  { id:"shawarma",      name:"شاورمة بدون دهون",                  emoji:"🌯", price:390, unit:"كج" },
+  { id:"shawarma",     name:"شاورمة بدون دهون",              emoji:"🌯", price:390,  unit:"كج" },
+  { id:"liver",        name:"كبدة ك",                       emoji:"🫀", price:80,   unit:"كج" },
+  { id:"giblets",      name:"كبد وقوانص ك",                 emoji:"🫀", price:80,   unit:"كج" },
+  { id:"gizzard",      name:"قوانص ك",                      emoji:"🫁", price:70,   unit:"كج" },
 ];
 
 const AREAS = {
@@ -278,34 +292,63 @@ export default function ClientOrderForm(){
 
           let mId=cData.memberId||null;
           if(!mId){
-            // Re-fetch latest clients to get accurate max (avoid race condition)
-            const freshR=await fetch(`${FIREBASE_URL}/db.json`);
-            const freshDb=await freshR.json()||{};
-            const freshClients=freshDb.clients||[];
-            const allIds=freshClients.map(c=>parseInt(c.memberId?.replace("MBR-",""))||0);
-            let next=(allIds.length>0?Math.max(...allIds):0)+1;
-            // Keep incrementing until we find one that's definitely not taken
-            while(freshClients.some(c=>c.memberId===`MBR-${String(next).padStart(3,"0")}`)) next++;
-            mId=`MBR-${String(next).padStart(3,"0")}`;
+            // Atomic counter using Firebase ETag (prevents duplicate IDs even with concurrent users)
+            let retries=3;
+            while(retries>0){
+              try{
+                // 1. Read counter with ETag
+                const cRes=await fetch(`${FIREBASE_URL}/db/memberCounter.json`,{
+                  headers:{"X-Firebase-ETag":"true"}
+                });
+                const currentVal=await cRes.json();
+                const etag=cRes.headers.get("ETag");
+                const nextVal=(currentVal||0)+1;
+                // 2. Write new counter value atomically — fails if someone else changed it
+                const putRes=await fetch(`${FIREBASE_URL}/db/memberCounter.json`,{
+                  method:"PUT",
+                  headers:{"Content-Type":"application/json","If-Match":etag||"*"},
+                  body:JSON.stringify(nextVal)
+                });
+                if(putRes.status===412){
+                  // Another client grabbed this number — retry
+                  retries--;
+                  await new Promise(r=>setTimeout(r,200+Math.random()*300));
+                  continue;
+                }
+                mId=`MBR-${String(nextVal).padStart(3,"0")}`;
+                break;
+              }catch{retries--;await new Promise(r=>setTimeout(r,300));}
+            }
+            if(!mId) mId=`MBR-T${Date.now().toString(36).toUpperCase()}`;
             const upd=found
-              ?freshClients.map(c=>normalizePhone(c.phone)===norm?{...c,memberId:mId,name:autoName||c.name}:c)
-              :[...freshClients,{id:"C-"+Date.now(),memberId:mId,name:autoName,phone:val,joinedAt:Date.now(),totalOrders:0,totalSpent:0}];
+              ?clients.map(c=>normalizePhone(c.phone)===norm?{...c,memberId:mId,name:autoName||c.name}:c)
+              :[...clients,{id:"C-"+Date.now(),memberId:mId,name:autoName,phone:val,joinedAt:Date.now(),totalOrders:0,totalSpent:0}];
             await fetch(`${FIREBASE_URL}/db.json`,{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({clients:upd})});
           }
           setMemberId(mId);
           setIsExisting(true);
         }else{
-          // New client — generate unique member ID from fresh Firebase data
+          // New client — generate unique sequential ID using Firebase atomic counter
           try{
-            const freshR=await fetch(`${FIREBASE_URL}/db.json`);
-            const freshDb=await freshR.json()||{};
-            const freshClients=freshDb.clients||[];
-            const allIds=freshClients.map(c=>parseInt(c.memberId?.replace("MBR-",""))||0);
-            let next=(allIds.length>0?Math.max(...allIds):0)+1;
-            while(freshClients.some(c=>c.memberId===`MBR-${String(next).padStart(3,"0")}`)) next++;
-            setMemberId(`MBR-${String(next).padStart(3,"0")}`);
+            let retries=3;
+            let newMId=null;
+            while(retries>0){
+              const cRes=await fetch(`${FIREBASE_URL}/db/memberCounter.json`,{headers:{"X-Firebase-ETag":"true"}});
+              const currentVal=await cRes.json();
+              const etag=cRes.headers.get("ETag");
+              const nextVal=(currentVal||0)+1;
+              const putRes=await fetch(`${FIREBASE_URL}/db/memberCounter.json`,{
+                method:"PUT",
+                headers:{"Content-Type":"application/json","If-Match":etag||"*"},
+                body:JSON.stringify(nextVal)
+              });
+              if(putRes.status===412){retries--;await new Promise(r=>setTimeout(r,200+Math.random()*300));continue;}
+              newMId=`MBR-${String(nextVal).padStart(3,"0")}`;
+              break;
+            }
+            setMemberId(newMId||`MBR-T${Date.now().toString(36).toUpperCase()}`);
           }catch{
-            setMemberId(`MBR-${String(Date.now()).slice(-4)}`);
+            setMemberId(`MBR-T${Date.now().toString(36).toUpperCase()}`);
           }
           setIsExisting(false);
           setName("");
@@ -552,7 +595,15 @@ ${itemLines}
   : <span style={{fontSize:32,flexShrink:0}}>{p.emoji}</span>}
                     <div style={{flex:1,minWidth:0}}>
                       <div style={{fontWeight:700,fontSize:13}}>{p.name}</div>
-                      <div style={{fontSize:12,color:GOLD,fontWeight:700,marginTop:2}}>ج.م {p.price} / {p.unit||"كج"}</div>
+                      {p.byWeight
+                        ?<div style={{fontSize:11,marginTop:2}}>
+                           <span style={{color:GOLD,fontWeight:700}}>{p.pricePerKg} ج.م/كج</span>
+                           <span style={{color:MUT}}> × {CHICKEN_AVG_WEIGHT}كج ≈ </span>
+                           <span style={{color:GOLD,fontWeight:900}}>{p.price} ج.م</span>
+                           <div style={{fontSize:9,color:MUT}}>السعر النهائي حسب الوزن الفعلي</div>
+                         </div>
+                        :<div style={{fontSize:12,color:GOLD,fontWeight:700,marginTop:2}}>ج.م {p.price} / {p.unit||"كج"}</div>
+                      }
                     </div>
                     <div style={{display:"flex",alignItems:"center",gap:8,flexShrink:0}}>
                       {qty>0&&<button onClick={()=>rem(p.id)} style={{width:32,height:32,borderRadius:9,border:"none",background:LIGHT,color:CREAM,fontSize:18,cursor:"pointer",fontWeight:700}}>−</button>}
