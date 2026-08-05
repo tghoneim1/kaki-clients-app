@@ -14,10 +14,10 @@ const IMG_DATA = {
 };
 
 const CHICKEN_PRICE_PER_KG=190;
-const CHICKEN_AVG_WEIGHT=1.6;
+const CHICKEN_AVG_WEIGHT=1.7;
 
 const PRODUCTS = [
-  { id:"whole",        name:"فرخة كاملة",                   emoji:"🐔", price:Math.round(CHICKEN_PRICE_PER_KG*CHICKEN_AVG_WEIGHT), pricePerKg:CHICKEN_PRICE_PER_KG, unit:"فرخة", qtyLabel:"فرخة", byWeight:true },
+  { id:"whole",        name:"فرخة كاملة (1600-1800 جم)",      emoji:"🐔", price:Math.round(CHICKEN_PRICE_PER_KG*CHICKEN_AVG_WEIGHT), pricePerKg:CHICKEN_PRICE_PER_KG, unit:"فرخة", qtyLabel:"فرخة", byWeight:true },
   { id:"shamoort",     name:"شامورط (750-1000 جم)",          emoji:"🐣", price:150,  unit:"فرخة", qtyLabel:"فرخة" },
   { id:"breast_full",  name:"صدور بالعظام",                  emoji:"🥩", price:250,  unit:"كج" },
   { id:"breast_deb",   name:"صدور مخلية بدون دهون",          emoji:"🥩", price:390,  unit:"كج" },
@@ -263,23 +263,27 @@ export default function ClientOrderForm(){
         const orders=[...dbOrders,...rootOrders].filter(o=>o&&o.phone).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
 
         const found=clients.find(c=>normalizePhone(c.phone)===norm);
-        const prevOrder=orders.find(o=>normalizePhone(o.phone)===norm);
+
+        // Search orders more thoroughly — by phone in both locations
+        const prevOrder=orders.find(o=>normalizePhone(o.phone)===norm)
+          || orders.find(o=>o.memberId&&found&&o.memberId===found.memberId);
 
         if(found||prevOrder){
           const cData=found||{};
           const oData=prevOrder||{};
 
+          // Name: try client first, then order fields
           const autoName=cData.name||oData.client||oData.name||"";
           setName(autoName);
           if(cData.prefix||oData.prefix) setPrefix(cData.prefix||oData.prefix||"");
 
-          if(oData.gov){setGov(oData.gov);}
-          if(oData.area){setArea(oData.area);}
+          // Address: always from most recent order
+          if(oData.gov)    {setGov(oData.gov);     setArea(oData.area||"");}
           if(oData.building){setBuilding(oData.building||"");}
-          if(oData.aptNum){setAptNum(oData.aptNum||"");}
-          if(oData.floor){setFloor(oData.floor||"");}
-          if(oData.street){setStreet(oData.street||"");}
-          if(oData.extra){setExtra(oData.extra||"");}
+          if(oData.aptNum)  {setAptNum(oData.aptNum||"");}
+          if(oData.floor)   {setFloor(oData.floor||"");}
+          if(oData.street)  {setStreet(oData.street||"");}
+          if(oData.extra)   {setExtra(oData.extra||"");}
           if(oData.propType){setPropType(oData.propType||"apt");}
 
           let mId=cData.memberId||null;
@@ -491,11 +495,21 @@ export default function ClientOrderForm(){
       // Add new order to orders array
       const updatedOrders=[order,...currentOrders];
 
+      // Also update client record with latest name and address
+      const currentClients=currentDB.clients||[];
+      const normPhone=normalizePhone(phone);
+      const clientExists=currentClients.find(c=>normalizePhone(c.phone)===normPhone||c.memberId===memberId);
+      const updatedClients=clientExists
+        ?currentClients.map(c=>(normalizePhone(c.phone)===normPhone||c.memberId===memberId)
+          ?{...c,name:fullName,prefix,phone,gov,area,street,building,aptNum,floor,propType,lastOrder:Date.now()}
+          :c)
+        :[...currentClients,{id:"C-"+Date.now(),memberId:memberId||null,name:fullName,prefix,phone,gov,area,street,building,aptNum,floor,propType,joinedAt:Date.now(),lastOrder:Date.now(),totalOrders:0,totalSpent:0}];
+
       // Write back to DB
       const res=await fetch(`${FIREBASE_URL}/db.json`,{
         method:"PATCH",
         headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({orders:updatedOrders})
+        body:JSON.stringify({orders:updatedOrders,clients:updatedClients})
       });
       if(res.ok){
         saved=true;
@@ -603,9 +617,7 @@ ${itemLines}
                       <div style={{fontWeight:700,fontSize:13}}>{p.name}</div>
                       {p.byWeight
                         ?<div style={{fontSize:11,marginTop:2}}>
-                           <span style={{color:GOLD,fontWeight:700}}>{p.pricePerKg||CHICKEN_PRICE_PER_KG} ج.م/كج</span>
-                           <span style={{color:MUT}}> × {CHICKEN_AVG_WEIGHT} كج ≈ </span>
-                           <span style={{color:GOLD,fontWeight:900}}>{Math.round((p.pricePerKg||CHICKEN_PRICE_PER_KG)*CHICKEN_AVG_WEIGHT)} ج.م</span>
+                           <div style={{color:GOLD,fontWeight:700,fontSize:12}}>{p.pricePerKg||CHICKEN_PRICE_PER_KG} ج.م/كج</div>
                            <div style={{fontSize:9,color:MUT,marginTop:2}}>⚖️ السعر النهائي حسب الوزن عند الاستلام</div>
                          </div>
                         :<div style={{fontSize:12,color:GOLD,fontWeight:700,marginTop:2}}>ج.م {p.price} / {p.unit||"كج"}</div>
