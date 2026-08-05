@@ -14,8 +14,8 @@ const IMG_DATA = {
 };
 
 const PRODUCTS = [
-  { id:"shamoort",      name:"حمام كداب (شامورط) (750-1000 جم)", emoji:"🐣", price:150, unit:"فرخة", qtyLabel:"فرخة" },
-  { id:"whole",         name:"فرخة كاملة (1600-1800 جم)",         emoji:"🐔", price:342, unit:"فرخة", qtyLabel:"فرخة" },
+  { id:"shamoort",      name:" (شامورط) (750-1000 جم)", emoji:"🐣", price:150, unit:"فرخة", qtyLabel:"فرخة" },
+  { id:"whole",         name:"فرخة كاملة (1600-1800 جم)",         emoji:"🐔", price:342, unit:"كج", qtyLabel:"فرخة" },
   { id:"breast_full",   name:"صدور بالعظام",                      emoji:"🥩", price:250, unit:"كج" },
   { id:"breast_deb",    name:"صدور مخلية بدون دهون",              emoji:"🥩", price:390, unit:"كج" },
   { id:"fillet",        name:"صدور فيليه (بانيه) بدون دهون",      emoji:"🥓", price:390, unit:"كج" },
