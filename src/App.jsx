@@ -28,6 +28,7 @@ const PRODUCTS = [
   { id:"chicken_wings",name:"أجنحة (تشيكن وينجز)",           emoji:"🍗", price:190,  unit:"كج" },
   { id:"shawarma",     name:"شاورمة بدون دهون",              emoji:"🌯", price:390,  unit:"كج" },
   { id:"liver",        name:"كبدة ك",                       emoji:"🫀", price:80,   unit:"كج" },
+  { id:"giblets",      name:"كبد وقوانص ك",                 emoji:"🫀", price:80,   unit:"كج" },
   { id:"gizzard",      name:"قوانص ك",                      emoji:"🫁", price:70,   unit:"كج" },
 ];
 
@@ -384,20 +385,20 @@ export default function ClientOrderForm(){
       .then(r=>r.json())
       .then(db=>{
         if(!db) return;
-        // Get current cycle prices
         const cycle=db.cycle||1;
         const cyclePrices=db.pricesByCycle?.[`cycle-${cycle}`]||db.prices||{};
+        const enabled=db.productEnabled||{};
+        // Show ALL products — mark disabled ones (client sees them but can't order)
+        let filtered=PRODUCTS.map(p=>({...p,enabled:enabled[p.id]!==false}));
         if(Object.keys(cyclePrices).length>0){
-          setProducts(PRODUCTS.map(p=>{
+          filtered=filtered.map(p=>{
             if(!cyclePrices[p.id]) return p;
             const newPrice=cyclePrices[p.id];
-            if(p.byWeight){
-              // Weight-based: store pricePerKg and recalculate estimated price
-              return{...p,pricePerKg:newPrice,price:Math.round(newPrice*CHICKEN_AVG_WEIGHT)};
-            }
+            if(p.byWeight) return{...p,pricePerKg:newPrice,price:Math.round(newPrice*CHICKEN_AVG_WEIGHT)};
             return{...p,price:newPrice};
-          }));
+          });
         }
+        setProducts(filtered);
       })
       .catch(()=>{});
   },[]);
@@ -624,30 +625,41 @@ ${itemLines}
             <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:14}}>
               {products.map(p=>{
                 const qty=items[p.id]||0;
+                const isEnabled=p.enabled!==false; // default true
                 return(
-                  <div key={p.id} style={{background:CARD,borderRadius:14,padding:"12px 14px",border:`1px solid ${qty>0?GOLD:BDR}`,display:"flex",alignItems:"center",gap:12}}>
+                  <div key={p.id} style={{background:CARD,borderRadius:14,padding:"12px 14px",border:`1px solid ${!isEnabled?"#e5e7eb":qty>0?GOLD:BDR}`,display:"flex",alignItems:"center",gap:12,opacity:isEnabled?1:0.55,position:"relative"}}>
+                    {!isEnabled&&(
+                      <div style={{position:"absolute",top:8,left:8,background:"#6b7280",color:"#fff",borderRadius:6,padding:"2px 7px",fontSize:10,fontWeight:700}}>
+                        غير متاح حالياً
+                      </div>
+                    )}
                     {IMG_DATA[p.id]
-  ? <img src={IMG_DATA[p.id]} alt={p.name} style={{width:64,height:64,objectFit:"cover",borderRadius:10,flexShrink:0}}/>
+  ? <img src={IMG_DATA[p.id]} alt={p.name} style={{width:64,height:64,objectFit:"cover",borderRadius:10,flexShrink:0,filter:isEnabled?"none":"grayscale(100%)"}}/>
   : <span style={{fontSize:32,flexShrink:0}}>{p.emoji}</span>}
                     <div style={{flex:1,minWidth:0}}>
-                      <div style={{fontWeight:700,fontSize:13}}>{p.name}</div>
+                      <div style={{fontWeight:700,fontSize:13,color:isEnabled?DARK:MUT}}>{p.name}</div>
                       {p.byWeight
                         ?<div style={{fontSize:11,marginTop:2}}>
-                           <div style={{color:GOLD,fontWeight:700,fontSize:12}}>{p.pricePerKg||CHICKEN_PRICE_PER_KG} ج.م/كج</div>
+                           <div style={{color:isEnabled?GOLD:MUT,fontWeight:700,fontSize:12}}>{p.pricePerKg||CHICKEN_PRICE_PER_KG} ج.م/كج</div>
                            <div style={{fontSize:9,color:MUT,marginTop:2}}>⚖️ السعر النهائي حسب الوزن عند الاستلام</div>
                          </div>
-                        :<div style={{fontSize:12,color:GOLD,fontWeight:700,marginTop:2}}>ج.م {p.price} / {p.unit||"كج"}</div>
+                        :<div style={{fontSize:12,color:isEnabled?GOLD:MUT,fontWeight:700,marginTop:2}}>ج.م {p.price} / {p.unit||"كج"}</div>
                       }
                     </div>
                     <div style={{display:"flex",alignItems:"center",gap:8,flexShrink:0}}>
-                      {qty>0&&<button onClick={()=>rem(p.id)} style={{width:32,height:32,borderRadius:9,border:"none",background:LIGHT,color:CREAM,fontSize:18,cursor:"pointer",fontWeight:700}}>−</button>}
-                      {qty>0&&(
+                      {qty>0&&isEnabled&&<button onClick={()=>rem(p.id)} style={{width:32,height:32,borderRadius:9,border:"none",background:LIGHT,color:CREAM,fontSize:18,cursor:"pointer",fontWeight:700}}>−</button>}
+                      {qty>0&&isEnabled&&(
                         <div style={{textAlign:"center",minWidth:24}}>
                           <div style={{fontWeight:900,fontSize:16,color:GOLD}}>{qty}</div>
                           {p.qtyLabel&&<div style={{fontSize:9,color:MUT,marginTop:1}}>{p.qtyLabel}</div>}
                         </div>
                       )}
-                      <button onClick={()=>{add(p.id);setErrors(r=>({...r,items:false}));}} style={{width:32,height:32,borderRadius:9,border:"none",background:qty>0?GOLD:LIGHT,color:qty>0?"#fff":DARK,fontSize:18,cursor:"pointer",fontWeight:700}}>+</button>
+                      <button
+                        disabled={!isEnabled}
+                        onClick={()=>{if(isEnabled){add(p.id);setErrors(r=>({...r,items:false}));}}}
+                        style={{width:32,height:32,borderRadius:9,border:"none",background:!isEnabled?"#e5e7eb":qty>0?GOLD:LIGHT,color:!isEnabled?"#9ca3af":qty>0?"#fff":DARK,fontSize:18,cursor:isEnabled?"pointer":"not-allowed",fontWeight:700}}>
+                        +
+                      </button>
                     </div>
                   </div>
                 );
