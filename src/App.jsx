@@ -18,7 +18,7 @@ const CHICKEN_AVG_WEIGHT=1.7;
 
 const PRODUCTS = [
   { id:"whole",        name:"فرخة كاملة (1600-1800 جم)",      emoji:"🐔", price:Math.round(CHICKEN_PRICE_PER_KG*CHICKEN_AVG_WEIGHT), pricePerKg:CHICKEN_PRICE_PER_KG, unit:"فرخة", qtyLabel:"فرخة", byWeight:true },
-  { id:"shamoort",     name:"شامورط (750-1000 جم)",          emoji:"🐣", price:150,  unit:"فرخة", qtyLabel:"فرخة" },
+  { id:"shamoort",     name:"فرخة صغيرة (شاموط) (750-1000 جم)", emoji:"🐣", price:150,  unit:"فرخة", qtyLabel:"فرخة" },
   { id:"breast_full",  name:"صدور بالعظام",                  emoji:"🥩", price:250,  unit:"كج" },
   { id:"breast_deb",   name:"صدور مخلية بدون دهون",          emoji:"🥩", price:390,  unit:"كج" },
   { id:"fillet",       name:"صدور فيليه (بانيه) بدون دهون",  emoji:"🥓", price:390,  unit:"كج" },
@@ -28,7 +28,6 @@ const PRODUCTS = [
   { id:"chicken_wings",name:"أجنحة (تشيكن وينجز)",           emoji:"🍗", price:190,  unit:"كج" },
   { id:"shawarma",     name:"شاورمة بدون دهون",              emoji:"🌯", price:390,  unit:"كج" },
   { id:"liver",        name:"كبدة ك",                       emoji:"🫀", price:80,   unit:"كج" },
-  
   { id:"gizzard",      name:"قوانص ك",                      emoji:"🫁", price:70,   unit:"كج" },
 ];
 
@@ -183,6 +182,7 @@ export default function ClientOrderForm(){
   const [items,setItems]=useState({});
   const [mapsLink,setMapsLink]=useState("");
   const [isCompound,setIsCompound]=useState(false);
+  const [compoundName,setCompoundName]=useState("");
   const [notes,setNotes]=useState("");
   const [errors,setErrors]=useState({});
   const [sent,setSent]=useState(false);
@@ -477,6 +477,7 @@ export default function ClientOrderForm(){
     if(!area)e.area=true;
     if(!building.trim())e.building=true;
     if(!aptNum.trim())e.aptNum=true;
+    if(isCompound&&!compoundName.trim())e.compoundName=true;
     if(!street.trim()&&!isCompound)e.street=true;
     setErrors(e);
     return Object.keys(e).length===0;
@@ -492,12 +493,12 @@ export default function ClientOrderForm(){
   const sendOrder=async()=>{
     setSending(true);
     const fullName=`${prefix?prefix+" ":""}${name}`.trim();
-    const fullAddress=delivery==="pickup"?"استلام شخصي":`${gov} — ${area}${street?" — "+street:""}${building?" — رقم "+building:""}${aptNum?" ش"+aptNum:""}${floor?" د"+floor:""}${extra?" — "+extra:""}`;
+    const fullAddress=delivery==="pickup"?"استلام شخصي":`${gov} — ${area}${isCompound&&compoundName?" — كومباوند "+compoundName:""}${street?" — "+street:""}${building?" — رقم "+building:""}${aptNum?" ش"+aptNum:""}${floor?" د"+floor:""}${extra?" — "+extra:""}`;
     const orderId="ORD-"+Date.now();
     const order={
       id:orderId,client:fullName,phone,address:fullAddress,
       memberId:memberId||null,
-      gov,area,street,building,aptNum,floor,delivery,items,total,
+      gov,area,street,building,aptNum,floor,delivery,isCompound,compoundName,items,total,
       notes:"",mapsLink:mapsLink||null,lat:lat||null,lng:lng||null,
       status:"جديد",createdAt:Date.now(),source:"client-app",
     };
@@ -879,6 +880,20 @@ ${itemLines}
                     <div style={{fontSize:10,color:MUT}}>لو في كومباوند — الشارع اختياري</div>
                   </div>
                 </button>
+
+                {/* Compound name — required when checked */}
+                {isCompound&&(
+                  <div style={{marginBottom:10}}>
+                    <label style={lbl}>اسم الكومباوند *</label>
+                    <input
+                      style={{...inp("compoundName"),marginBottom:4}}
+                      placeholder="مثال: كومباوند بالم هيلز"
+                      value={compoundName}
+                      onChange={e=>{setCompoundName(e.target.value);setErrors(r=>({...r,compoundName:false}));}}
+                    />
+                    {errors.compoundName&&<div style={{fontSize:11,color:"#f87171",marginBottom:6}}>⚠️ اكتب اسم الكومباوند</div>}
+                  </div>
+                )}
 
                 <label style={lbl}>رقم العمارة *</label>
                 <input style={{...inp("building"),marginBottom:10}} placeholder="مثال: ٥" value={building} onChange={e=>{setBuilding(e.target.value);setErrors(r=>({...r,building:false}));}}/>
