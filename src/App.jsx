@@ -549,7 +549,8 @@ ${delivery==="delivery"?`📍 ${fullAddress}`:"🏪 استلام شخصي"}
 ━━━━━━━━━━━━━━
 ${itemLines}
 ━━━━━━━━━━━━━━
-💰 الإجمالي: ج.م ${total}`;
+⚖️ السعر النهائي حسب الوزن عند الاستلام
+💰 الإجمالي التقديري: ج.م ${total}`;
         window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(waMsg)}`,"_blank");
       }
     }catch(e){ saved=false; }
@@ -560,7 +561,7 @@ ${itemLines}
         const p=products.find(x=>x.id===id);
         return p?`${p.name} × ${q} = ج.م ${p.price*q}`:"";
       }).filter(Boolean).join("\n");
-      const msg=`🐔 طلب جديد — دواجن كاكي\n━━━━━━━━━━━━\n👤 ${fullName}\n📞 ${phone}\n📍 ${fullAddress}\n━━━━━━━━━━━━\n${lines}\n━━━━━━━━━━━━\n💰 الإجمالي: ج.م ${total}`;
+      const msg=`🐔 طلب جديد — دواجن كاكي\n━━━━━━━━━━━━\n👤 ${fullName}\n📞 ${phone}\n📍 ${fullAddress}\n━━━━━━━━━━━━\n${lines}\n━━━━━━━━━━━━\n⚖️ السعر النهائي حسب الوزن عند الاستلام\n💰 الإجمالي التقديري: ج.م ${total}`;
       window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`,"_blank");
     }
 
@@ -647,7 +648,10 @@ ${itemLines}
                            <div style={{color:isEnabled?GOLD:MUT,fontWeight:700,fontSize:12}}>{p.pricePerKg||CHICKEN_PRICE_PER_KG} ج.م/كج</div>
                            <div style={{fontSize:9,color:MUT,marginTop:2}}>⚖️ السعر النهائي حسب الوزن عند الاستلام</div>
                          </div>
-                        :<div style={{fontSize:12,color:isEnabled?GOLD:MUT,fontWeight:700,marginTop:2}}>ج.م {p.price} / {p.unit||"كج"}</div>
+                        :<div style={{fontSize:11,marginTop:2}}>
+                           <div style={{color:isEnabled?GOLD:MUT,fontWeight:700,fontSize:12}}>ج.م {p.price} / {p.unit||"كج"}</div>
+                           <div style={{fontSize:9,color:MUT,marginTop:2}}>⚖️ السعر النهائي حسب الوزن عند الاستلام</div>
+                         </div>
                       }
                     </div>
                     <div style={{display:"flex",alignItems:"center",gap:8,flexShrink:0}}>
