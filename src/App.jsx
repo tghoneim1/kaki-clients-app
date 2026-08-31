@@ -58,7 +58,7 @@ const GOV_COLORS = {
 };
 
 const PREFIXES = ["أ.","د.","م.","أستاذة","دكتورة","مهندس","مهندسة"];
-const PROP_TYPES = [{id:"apt",label:"شقة",icon:"🏢"},{id:"house",label:"فيلا",icon:"🏠"}];
+// PROP_TYPES labels are set dynamically from t.aptType/t.villaType
 
 const WHATSAPP_NUMBER = "201119395000"; // 🔴 غيّر الرقم ده
 
@@ -846,7 +846,7 @@ ${itemLines}
               {Object.keys(AREAS).map(g=>(
                 <button key={g} onClick={()=>{setGov(g===gov?"":g);setArea("");setErrors(r=>({...r,gov:false}));}}
                   style={{flex:1,background:gov===g?(GOV_COLORS[g]||GOLD):CARD,color:gov===g?"#fff":DARK,border:`1.5px solid ${errors.gov?ERROR:gov===g?(GOV_COLORS[g]||GOLD):BDR}`,borderRadius:10,padding:"10px 4px",fontWeight:700,fontSize:10,fontFamily:"'Cairo',sans-serif",cursor:"pointer"}}>
-                  {g} {gov===g?"▲":"▼"}
+                  {lang==="EN"?(t.govDisplayNames?.[g]||g):g} {gov===g?"▲":"▼"}
                 </button>
               ))}
             </div>
@@ -854,12 +854,12 @@ ${itemLines}
             {/* Area */}
             {gov&&!area&&(
               <>
-                <label style={lbl}>المنطقة / الحي *</label>
+                <label style={lbl}>{t.areaLabel}</label>
                 <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6,maxHeight:200,overflowY:"auto",marginBottom:10}}>
                   {AREAS[gov].map(a=>(
                     <button key={a} onClick={()=>{setArea(a);setErrors(r=>({...r,area:false}));}}
                       style={{background:CARD,color:CREAM,border:`1px solid ${errors.area?"#ef4444":BDR}`,borderRadius:9,padding:"9px 8px",fontSize:12,fontFamily:"'Cairo',sans-serif",cursor:"pointer",textAlign:"center"}}>
-                      {a}
+                      {lang==="EN"?(t.areaDisplayNames?.[a]||a):a}
                     </button>
                   ))}
                 </div>
@@ -869,7 +869,7 @@ ${itemLines}
               <button onClick={()=>setArea("")}
                 style={{width:"100%",background:GOV_COLORS[gov]||GOLD,color:"#000",border:"none",borderRadius:10,padding:"11px 14px",fontWeight:800,fontSize:13,fontFamily:"'Cairo',sans-serif",cursor:"pointer",display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
                 <span>📍 {lang==="EN"?(t.govDisplayNames?.[gov]||gov):gov} — {lang==="EN"?(t.areaDisplayNames?.[area]||area):area}</span>
-                <span style={{fontSize:11,fontWeight:400}}>تغيير ▼</span>
+                <span style={{fontSize:11,fontWeight:400}}>{t.changeBtn}</span>
               </button>
             )}
 
@@ -877,10 +877,10 @@ ${itemLines}
             {area&&(
               <>
                 <div style={{display:"flex",gap:8,marginBottom:10}}>
-                  {PROP_TYPES.map(t=>(
-                    <button key={t.id} onClick={()=>{setPropType(t.id);setIsCompound(false);}}
-                      style={{flex:1,background:propType===t.id?GOLD:CARD,color:propType===t.id?"#fff":DARK,border:`1.5px solid ${propType===t.id?GOLD:BDR}`,borderRadius:24,padding:"10px 6px",fontWeight:propType===t.id?800:400,fontSize:12,fontFamily:"'Cairo',sans-serif",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:5}}>
-                      {t.icon} {t.label}
+                  {[{id:"apt",label:t.aptType,icon:"🏢"},{id:"house",label:t.villaType,icon:"🏠"}].map(pt=>(
+                    <button key={pt.id} onClick={()=>{setPropType(pt.id);setIsCompound(false);}}
+                      style={{flex:1,background:propType===pt.id?GOLD:CARD,color:propType===pt.id?"#fff":DARK,border:`1.5px solid ${propType===pt.id?GOLD:BDR}`,borderRadius:24,padding:"10px 6px",fontWeight:propType===pt.id?800:400,fontSize:12,fontFamily:"'Cairo',sans-serif",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:5}}>
+                      {pt.icon} {pt.label}
                     </button>
                   ))}
                 </div>
@@ -911,12 +911,12 @@ ${itemLines}
                   </div>
                 )}
 
-                <label style={lbl}>رقم العمارة *</label>
+                <label style={lbl}>{t.buildingLabel}</label>
                 <input style={{...inp("building"),marginBottom:10}} placeholder="مثال: ٥" value={building} onChange={e=>{setBuilding(e.target.value);setErrors(r=>({...r,building:false}));}}/>
 
                 <div style={{display:"flex",gap:8,marginBottom:10}}>
                   <div style={{flex:1}}>
-                    <label style={lbl}>{propType==="house"?"رقم الفيلا *":"رقم الشقة *"}</label>
+                    <label style={lbl}>{propType==="house"?t.villaLabel:t.aptLabel}</label>
                     <input style={inp("aptNum")} placeholder="٣" value={aptNum} onChange={e=>{setAptNum(e.target.value);setErrors(r=>({...r,aptNum:false}));}}/>
                   </div>
                   {propType==="apt"&&(
@@ -924,7 +924,7 @@ ${itemLines}
                       <label style={lbl}>الدور (اختياري)</label>
                       <select style={{...inp(),marginBottom:0,cursor:"pointer"}} value={floor} onChange={e=>setFloor(e.target.value)}>
                         <option value="">اختر</option>
-                        {["أرضي","١","٢","٣","٤","٥","٦","٧","٨","٩","١٠","١١","١٢","١٣","١٤","١٥","١٦","١٧","١٨","١٩","٢٠"].map(f=>(
+                        {t.floors.map(f=>(
                           <option key={f} value={f}>{f}</option>
                         ))}
                       </select>
@@ -932,7 +932,7 @@ ${itemLines}
                   )}
                 </div>
 
-                <label style={lbl}>الشارع {isCompound?"(اختياري)":"*"}</label>
+                <label style={lbl}>الشارع {isCompound?`(${lang==="EN"?"optional":"اختياري"})`:"*"}</label>
                 <input style={{...inp(isCompound?"":  "street"),marginBottom:10}} placeholder="مثال: شارع الجمهورية" value={street} onChange={e=>{setStreet(e.target.value);setErrors(r=>({...r,street:false}));}}/>
                 {/* Delivery notes */}
                 <label style={lbl}>📝 ملاحظات التوصيل (اختياري)</label>
