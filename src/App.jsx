@@ -90,7 +90,7 @@ const TRANS={
     saveBtn:"💾 حفظ البيانات",savingBtn:"⏳ جاري الحفظ...",dataSaved:"✅ تم حفظ البيانات!",
     nextBtn:"التالي ←",backBtn:"← رجوع",
     addressTitle:"📍 عنوانك",addressSub:"حدد موقعك بدقة",
-    pasteMap:"📎 الصق رابط Google Maps",mapPH:"https://maps.google.com/...",mapAdded:"✅ تم إضافة رابط الموقع",
+    locationLabel:"📍 الموقع (اختياري — اختر طريقة)",pasteMap:"📎 الصق رابط Google Maps",mapPH:"https://maps.google.com/...",mapAdded:"✅ تم إضافة رابط الموقع",
     openMapBtn:"تحديد الموقع على الخريطة",mapLocated:"✅ تم تحديد الموقع",mapSubText:"اضغط لفتح الخريطة",
     myLocBtn:"📍 موقعي الحالي",confirmLocBtn:"📍 هذا موقعي ✅",mapHint:"اضغط على الخريطة أو اسحب الـ Pin",
     govLabel:"المحافظة *",areaLabel:"المنطقة / الحي *",changeBtn:"تغيير ▼",
@@ -103,7 +103,7 @@ const TRANS={
     fieldsRequired:"⚠️ من فضلك اكمل الحقول المطلوبة",
     orderTitle:"🛒 اختر طلبك",orderSub:"اضغط + لإضافة الكمية",
     addBtn:"(+) أضف",itemsRequired:"⚠️ اختر صنفاً واحداً على الأقل",
-    totalLabel:"الإجمالي",totalSub:"(السعر النهائي حسب الوزن عند الاستلام)",
+    totalLabel:"الإجمالي",totalSub:"{t.totalSub}",
     reviewBtn:"التالي — مراجعة الطلب ←",
     confirmTitle:"✅ مراجعة طلبك",confirmSub:"تأكد من البيانات قبل الإرسال",
     yourDataLabel:"👤 بياناتك",yourItemsLabel:"🛒 الأصناف",editBtn:"✏️ تعديل",
@@ -134,9 +134,9 @@ const TRANS={
     pickup:"Self Pickup",pickupSub:"Pick up your order",
     saveBtn:"💾 Save Data",savingBtn:"⏳ Saving...",dataSaved:"✅ Data saved!",
     nextBtn:"Next →",backBtn:"← Back",
-    addressTitle:"📍 Delivery Address",addressSub:"Set your location accurately",
-    pasteMap:"📎 Paste Google Maps link",mapPH:"https://maps.google.com/...",mapAdded:"✅ Google Maps link added",
-    openMapBtn:"Set location on map",mapLocated:"✅ Location set",mapSubText:"Tap to open map",
+    addressTitle:"📍 Delivery Address",addressSub:"Locate precisely",
+    locationLabel:"📍 Location (optional — choose a method)",pasteMap:"📎 Paste the Google Maps link",mapPH:"https://maps.google.com/...",mapAdded:"✅ Google Maps link added",
+    openMapBtn:"🗺️ Locate the site on the map",mapLocated:"✅ Location set",mapSubText:"Tap to open the map",
     myLocBtn:"📍 My current location",confirmLocBtn:"📍 This is my location ✅",mapHint:"Tap on map or drag the Pin",
     govLabel:"Governorate *",areaLabel:"Area / District *",changeBtn:"Change ▼",
     compoundLabel:"Compound",compoundSub:"In a compound — Street is optional",
@@ -151,9 +151,9 @@ const TRANS={
     addBtn:"(+) Add",itemsRequired:"⚠️ Please select at least one item",
     totalLabel:"Total (estimated)",totalSub:"(Final price based on weight upon delivery)",
     reviewBtn:"Next — Review Order →",
-    confirmTitle:"✅ Review Your Order",confirmSub:"Verify your details before submitting",
-    yourDataLabel:"👤 Your Details",yourItemsLabel:"🛒 Items",editBtn:"✏️ Edit",
-    sendBtn:"✅ Send Order",sendingBtn:"⏳ Sending...",
+    confirmTitle:"✅ Review your request",confirmSub:"Verify the data before submitting.",
+    yourDataLabel:"👤 Your data",yourItemsLabel:"🛒 Items",editBtn:"Edit",
+    sendBtn:"✅ Submit the order",sendingBtn:"⏳ Sending...",
     aptType:"Apartment",villaType:"Villa",
     floors:["Ground","1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20"],
     govs:["القاهرة","الجيزة","القاهرة الجديدة"],
@@ -554,7 +554,7 @@ export default function ClientOrderForm(){
 👤 ${fullName}
 🆔 ${memberId||"جديد"}
 📞 ${phone}
-${delivery==="delivery"?`📍 ${fullAddress}`:lang==="EN"?"🏪 Self Pickup":"🏪 استلام شخصي"}
+${delivery==="delivery"?`📍 ${fullAddress}`:lang==="EN"?"🏪 Self Pickup":lang==="EN"?"🏪 Self Pickup":"🏪 استلام شخصي"}
 ━━━━━━━━━━━━━━
 ${itemLines}
 ━━━━━━━━━━━━━━
@@ -690,7 +690,7 @@ ${itemLines}
                   <div style={{fontWeight:700,fontSize:14,color:DARK}}>{t.totalLabel}</div>
                   <div style={{fontSize:10,color:MUT}}>{t.totalSub}</div>
                 </div>
-                <span style={{fontWeight:900,fontSize:20,color:GOLD}}>ج.م {total}</span>
+                <span style={{fontWeight:900,fontSize:20,color:GOLD}}>{lang==="EN"?`EGP ${total}`:`ج.م ${total}`}</span>
               </div>
             )}
 
@@ -783,15 +783,15 @@ ${itemLines}
         {/* ══ STEP 3 — Address (NEW THIRD STEP) ══ */}
         {step===3&&(
           <div>
-            <div style={{fontWeight:800,fontSize:16,color:GOLD,marginBottom:4}}>📍 عنوان التوصيل</div>
-            <div style={{fontSize:12,color:MUT,marginBottom:16}}>حدد موقعك بدقة</div>
+            <div style={{fontWeight:800,fontSize:16,color:GOLD,marginBottom:4}}>{t.addressTitle}</div>
+            <div style={{fontSize:12,color:MUT,marginBottom:16}}>{t.addressSub}</div>
 
             {/* Location options */}
-            <label style={lbl}>📍 الموقع (اختياري — اختر طريقة)</label>
+            <label style={lbl}>{t.locationLabel||"📍 الموقع (اختياري — اختر طريقة)"}</label>
 
             {/* Google Maps paste */}
             <div style={{background:CARD,border:`1px solid ${BDR}`,borderRadius:12,padding:"12px 14px",marginBottom:8}}>
-              <div style={{fontSize:12,color:MUT,marginBottom:6,fontWeight:700}}>📎 الصق رابط Google Maps</div>
+              <div style={{fontSize:12,color:MUT,marginBottom:6,fontWeight:700}}>{t.pasteMap}</div>
               <div style={{display:"flex",gap:6}}>
                 <input
                   style={{...inp(),marginBottom:0,flex:1,fontSize:12}}
@@ -892,8 +892,8 @@ ${itemLines}
                     {isCompound&&<span style={{color:"#fff",fontSize:13,fontWeight:900}}>✓</span>}
                   </div>
                   <div style={{textAlign:"right"}}>
-                    <div style={{fontWeight:700,fontSize:13,color:isCompound?GOLD:DARK}}>كومباوند</div>
-                    <div style={{fontSize:10,color:MUT}}>لو في كومباوند — الشارع اختياري</div>
+                    <div style={{fontWeight:700,fontSize:13,color:isCompound?GOLD:DARK}}>{t.compoundLabel}</div>
+                    <div style={{fontSize:10,color:MUT}}>{t.compoundSub}</div>
                   </div>
                 </button>
 
@@ -921,7 +921,7 @@ ${itemLines}
                   </div>
                   {propType==="apt"&&(
                     <div style={{flex:1}}>
-                      <label style={lbl}>الدور (اختياري)</label>
+                      <label style={lbl}>{t.floorLabel}</label>
                       <select style={{...inp(),marginBottom:0,cursor:"pointer"}} value={floor} onChange={e=>setFloor(e.target.value)}>
                         <option value="">اختر</option>
                         {t.floors.map(f=>(
@@ -950,7 +950,7 @@ ${itemLines}
             <div style={{display:"flex",gap:8}}>
               <button onClick={()=>setStep(2)}
                 style={{flex:1,background:LIGHT,color:CREAM,border:"none",borderRadius:14,padding:"14px",fontWeight:700,fontSize:14,fontFamily:"'Cairo',sans-serif",cursor:"pointer"}}>
-                ← رجوع
+                {t.backBtn}
               </button>
               <button onClick={()=>{if(validateStep2())setStep(4);}}
                 style={{flex:2,background:GOLD,color:"#000",border:"none",borderRadius:14,padding:"14px",fontWeight:900,fontSize:15,fontFamily:"'Cairo',sans-serif",cursor:"pointer"}}>
@@ -963,46 +963,46 @@ ${itemLines}
         {/* ══ STEP 4 — Confirm ══ */}
         {step===4&&(
           <div>
-            <div style={{fontWeight:800,fontSize:16,color:GOLD,marginBottom:4}}>✅ مراجعة طلبك</div>
-            <div style={{fontSize:12,color:MUT,marginBottom:16}}>تأكد من البيانات قبل الإرسال</div>
+            <div style={{fontWeight:800,fontSize:16,color:GOLD,marginBottom:4}}>{t.confirmTitle}</div>
+            <div style={{fontSize:12,color:MUT,marginBottom:16}}>{t.confirmSub}</div>
 
             {/* Summary */}
             <div style={{background:CARD,borderRadius:14,padding:"14px 16px",marginBottom:10,border:`1px solid ${BDR}`}}>
-              <div style={{fontWeight:700,fontSize:13,color:GOLD,marginBottom:10}}>👤 بياناتك</div>
+              <div style={{fontWeight:700,fontSize:13,color:GOLD,marginBottom:10}}>{t.yourDataLabel}</div>
               <div style={{fontSize:13,color:CREAM,lineHeight:2}}>
                 <div>👤 {prefix?prefix+" ":""}{name}</div>
                 <div>📞 {phone}</div>
                 <div>{delivery==="pickup"?"🏪 استلام شخصي":lang==="EN"?`🚚 Delivery — ${t.govDisplayNames?.[gov]||gov} — ${t.areaDisplayNames?.[area]||area}`:`🛵 توصيل — ${gov} — ${area}`}</div>
                 {delivery==="delivery"&&<div style={{fontSize:12,color:MUT}}>{street} — {building} ش{aptNum}{floor?" د"+floor:""}</div>}
                 {extra&&<div style={{fontSize:12,color:MUT}}>📝 {extra}</div>}
-                {mapsLink&&<div style={{fontSize:11,color:"#10b981"}}>🔗 رابط Google Maps مضاف ✅</div>}
-                {locSet&&<div style={{fontSize:11,color:"#10b981"}}>📍 الموقع محدد على الخريطة ✅</div>}
+                {mapsLink&&<div style={{fontSize:11,color:"#10b981"}}>{lang==="EN"?"🔗 Google Maps link added ✅":"🔗 رابط Google Maps مضاف ✅"}</div>}
+                {locSet&&<div style={{fontSize:11,color:"#10b981"}}>{lang==="EN"?"📍 Location set on map ✅":"📍 الموقع محدد على الخريطة ✅"}</div>}
               </div>
-              <button onClick={()=>setStep(1)} style={{background:"none",border:"none",color:GOLD,fontSize:12,fontFamily:"'Cairo',sans-serif",cursor:"pointer",marginTop:6}}>✏️ تعديل</button>
+              <button onClick={()=>setStep(1)} style={{background:"none",border:"none",color:GOLD,fontSize:12,fontFamily:"'Cairo',sans-serif",cursor:"pointer",marginTop:6}}>{t.editBtn}</button>
             </div>
 
             <div style={{background:CARD,borderRadius:14,padding:"14px 16px",marginBottom:14,border:`1px solid ${BDR}`}}>
-              <div style={{fontWeight:700,fontSize:13,color:GOLD,marginBottom:10}}>🛒 الأصناف</div>
+              <div style={{fontWeight:700,fontSize:13,color:GOLD,marginBottom:10}}>{t.yourItemsLabel}</div>
               {products.filter(p=>items[p.id]>0).map(p=>(
                 <div key={p.id} style={{display:"flex",alignItems:"center",gap:10,padding:"8px 0",borderBottom:`1px solid ${BDR}`}}>
                   {IMG_DATA[p.id]
                     ?<img src={IMG_DATA[p.id]} alt={p.name} style={{width:44,height:44,objectFit:"cover",borderRadius:8,flexShrink:0}}/>
                     :<span style={{fontSize:24,flexShrink:0}}>{p.emoji}</span>}
                   <div style={{flex:1}}>
-                    <div style={{fontSize:12,fontWeight:700,color:DARK}}>{p.name}</div>
-                    <div style={{fontSize:11,color:MUT}}>× {items[p.id]} {p.unit||"كج"}</div>
+                    <div style={{fontSize:12,fontWeight:700,color:DARK}}>{lang==="EN"?(p.nameEN||p.name):p.name}</div>
+                    <div style={{fontSize:11,color:MUT}}>× {items[p.id]} {lang==="EN"?(p.unitEN||"kg"):(p.unit||"كج")}</div>
                   </div>
-                  <span style={{color:GOLD,fontWeight:700,fontSize:13}}>ج.م {Math.round((p.byWeight?Math.round((p.pricePerKg||CHICKEN_PRICE_PER_KG)*CHICKEN_AVG_WEIGHT):p.price)*items[p.id])}</span>
+                  <span style={{color:GOLD,fontWeight:700,fontSize:13}}>{lang==="EN"?`EGP ${Math.round((p.byWeight?Math.round((p.pricePerKg||CHICKEN_PRICE_PER_KG)*CHICKEN_AVG_WEIGHT):p.price)*items[p.id])}`:`ج.م ${Math.round((p.byWeight?Math.round((p.pricePerKg||CHICKEN_PRICE_PER_KG)*CHICKEN_AVG_WEIGHT):p.price)*items[p.id])}`}</span>
                 </div>
               ))}
               <div style={{display:"flex",justifyContent:"space-between",marginTop:10,fontWeight:900,fontSize:16}}>
                 <div style={{textAlign:"right"}}>
-                  <div style={{fontWeight:900,fontSize:16,color:DARK}}>الإجمالي</div>
-                  <div style={{fontSize:10,color:MUT}}>(السعر النهائي حسب الوزن عند الاستلام)</div>
+                  <div style={{fontWeight:900,fontSize:16,color:DARK}}>{t.totalLabel}</div>
+                  <div style={{fontSize:10,color:MUT}}>{t.totalSub}</div>
                 </div>
                 <span style={{color:GOLD}}>ج.م {total}</span>
               </div>
-              <button onClick={()=>setStep(3)} style={{background:"none",border:"none",color:GOLD,fontSize:12,fontFamily:"'Cairo',sans-serif",cursor:"pointer",marginTop:6}}>✏️ تعديل</button>
+              <button onClick={()=>setStep(3)} style={{background:"none",border:"none",color:GOLD,fontSize:12,fontFamily:"'Cairo',sans-serif",cursor:"pointer",marginTop:6}}>{t.editBtn}</button>
             </div>
 
             {notes&&(
@@ -1013,11 +1013,11 @@ ${itemLines}
 
             <button onClick={sendOrder} disabled={sending}
               style={{width:"100%",background:sending?"#C8A060":GOLD,color:"#fff",border:"none",borderRadius:16,padding:"16px",fontWeight:900,fontSize:16,fontFamily:"'Cairo',sans-serif",cursor:sending?"not-allowed":"pointer",boxShadow:`0 8px 32px ${GOLD}44`,marginBottom:8}}>
-              {sending?"⏳ جاري الإرسال...":"✅ إرسال الطلب"}
+              {sending?t.sendingBtn:t.sendBtn}
             </button>
             <button onClick={()=>setStep(isExisting?2:3)}
               style={{width:"100%",background:LIGHT,color:DARK,border:`1px solid ${BDR}`,borderRadius:14,padding:"12px",fontWeight:600,fontSize:13,fontFamily:"'Cairo',sans-serif",cursor:"pointer"}}>
-              ← رجوع
+              {t.backBtn}
             </button>
           </div>
         )}
