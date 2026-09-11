@@ -21,7 +21,7 @@ const CHICKEN_AVG_WEIGHT=1.7;
 
 const PRODUCTS = [
   { id:"whole",        name:"فرخة كاملة (1600-1800 جم)",           nameEN:"Whole Chicken (1600-1800g)",               emoji:"🐔", price:Math.round(CHICKEN_PRICE_PER_KG*CHICKEN_AVG_WEIGHT), pricePerKg:CHICKEN_PRICE_PER_KG, unit:"فرخة", unitEN:"piece", qtyLabel:"فرخة", byWeight:true },
-  { id:"shamoort",     name:"فرخة صغيرة (شاموط) (750-1000 جم)",    nameEN:"Small Chicken (Shamoot) (750-1000g)",      emoji:"🐣", price:140,  unit:"فرخة", unitEN:"piece", qtyLabel:"فرخة" },
+  { id:"shamoort",     name:"فرخة صغيرة (شمورط) (750-1000 جم)",    nameEN:"Small Chicken (Shamoot) (750-1000g)",      emoji:"🐣", price:140,  unit:"فرخة", unitEN:"piece", qtyLabel:"فرخة" },
   { id:"breast_full",  name:"صدور بالعظام",                        nameEN:"Bone-in Breasts",                          emoji:"🥩", price:250,  unit:"كج", unitEN:"kg" },
   { id:"breast_deb",   name:"صدور مخلية بدون دهون",                nameEN:"Boneless Skinless Breasts (fat removed)",  emoji:"🥩", price:390,  unit:"كج", unitEN:"kg" },
   { id:"fillet",       name:"صدور فيليه (بانيه) بدون دهون",         nameEN:"Fillet Breasts (Breaded), fat removed",    emoji:"🥓", price:390,  unit:"كج", unitEN:"kg" },
