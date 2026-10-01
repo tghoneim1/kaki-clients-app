@@ -655,13 +655,41 @@ ${itemLines}
           <span style={{padding:"4px 12px",borderRadius:20,fontSize:11,fontWeight:800,background:"rgba(232,130,26,0.15)",border:"1px solid rgba(232,130,26,0.4)",color:"#E8821A"}}>🔥 {lang==="EN"?"Limited Offer":"عرض محدود"}</span>
           <span style={{padding:"4px 12px",borderRadius:20,fontSize:11,fontWeight:800,background:"rgba(124,58,237,0.15)",border:"1px solid rgba(124,58,237,0.4)",color:"#a78bfa"}}>⚡ {lang==="EN"?"Until stock runs out":"حتى نفاد الكمية"}</span>
         </div>
-        {/* Hero */}
+        {/* Hero — animated orb with 200 inside */}
         <div style={{textAlign:"center",marginBottom:16,position:"relative",zIndex:1}}>
-          <div style={{fontSize:11,color:"rgba(255,255,255,0.4)",letterSpacing:2,textTransform:"uppercase",marginBottom:6}}>{lang==="EN"?"Save on your order":"وفّر على طلبك"}</div>
-          <div style={{fontSize:72,fontWeight:900,lineHeight:1,background:"linear-gradient(135deg,#ff9a3c,#E8821A,#f59e0b)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text"}}>200</div>
-          <div style={{display:"inline-block",background:"rgba(232,130,26,0.15)",border:"1px solid rgba(232,130,26,0.4)",color:"#E8821A",fontSize:18,fontWeight:900,padding:"4px 18px",borderRadius:10,marginTop:4}}>
-            {lang==="EN"?"EGP instant discount":"ج.م خصم فوري"}
+          <div style={{fontSize:11,color:"rgba(255,255,255,0.4)",letterSpacing:2,textTransform:"uppercase",marginBottom:16}}>{lang==="EN"?"Save on your order":"وفّر على طلبك"}</div>
+          <div style={{position:"relative",display:"inline-block",width:160,height:160}}>
+            {/* Outer glow ring */}
+            <div style={{
+              position:"absolute",inset:-10,borderRadius:"50%",
+              background:"radial-gradient(circle, rgba(232,130,26,0.35) 0%, rgba(232,130,26,0) 70%)",
+              animation:"orb-pulse 2.5s ease-in-out infinite",
+            }}/>
+            {/* Middle ring */}
+            <div style={{
+              position:"absolute",inset:4,borderRadius:"50%",
+              background:"radial-gradient(circle, rgba(245,158,11,0.25) 0%, transparent 70%)",
+              animation:"orb-pulse 2.5s ease-in-out infinite 0.5s",
+            }}/>
+            {/* Main orb */}
+            <div style={{
+              position:"absolute",inset:0,borderRadius:"50%",
+              background:"radial-gradient(circle at 35% 35%, #ff9a3c, #E8821A, #c05c0a)",
+              boxShadow:"0 0 40px rgba(232,130,26,0.6), 0 0 80px rgba(232,130,26,0.3)",
+              display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",
+              border:"3px solid rgba(255,255,255,0.25)",
+              animation:"orb-float 3s ease-in-out infinite",
+            }}>
+              {/* Shine */}
+              <div style={{position:"absolute",top:"15%",left:"20%",width:"35%",height:"25%",borderRadius:"50%",background:"rgba(255,255,255,0.3)",filter:"blur(6px)"}}/>
+              <span style={{fontSize:52,fontWeight:900,color:"#fff",lineHeight:1,textShadow:"0 2px 10px rgba(0,0,0,0.3)"}}>200</span>
+              <span style={{fontSize:13,color:"rgba(255,255,255,0.85)",fontWeight:800}}>ج.م خصم</span>
+            </div>
           </div>
+          <style>{`
+            @keyframes orb-float { 0%,100%{transform:translateY(0) scale(1);} 50%{transform:translateY(-10px) scale(1.03);} }
+            @keyframes orb-pulse { 0%,100%{opacity:0.6;transform:scale(1);} 50%{opacity:1;transform:scale(1.15);} }
+          `}</style>
         </div>
         {/* Condition + 200 badge */}
         <div style={{background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:14,padding:"18px 16px",marginBottom:14,display:"flex",alignItems:"center",justifyContent:"space-between",position:"relative",zIndex:1}}>
