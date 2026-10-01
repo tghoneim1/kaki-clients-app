@@ -663,23 +663,25 @@ ${itemLines}
             {lang==="EN"?"EGP instant discount":"ج.م خصم فوري"}
           </div>
         </div>
-        {/* Price comparison */}
-        <div style={{background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:14,padding:"14px 16px",marginBottom:14,display:"flex",alignItems:"center",justifyContent:"space-between",position:"relative",zIndex:1}}>
-          <div style={{position:"absolute",top:-11,left:"50%",transform:"translateX(-50%)",background:"#10b981",color:"#fff",fontSize:11,fontWeight:900,padding:"3px 14px",borderRadius:20,whiteSpace:"nowrap"}}>
-            💰 {lang==="EN"?"You save EGP 200!":"وفّرت 200 ج.م!"}
+        {/* Condition + 200 badge */}
+        <div style={{background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:14,padding:"18px 16px",marginBottom:14,display:"flex",alignItems:"center",justifyContent:"space-between",position:"relative",zIndex:1}}>
+          <div>
+            <div style={{fontSize:11,color:"rgba(255,255,255,0.4)",fontWeight:700,marginBottom:6}}>{lang==="EN"?"On orders of":"على مشتروات"}</div>
+            <div style={{fontSize:28,fontWeight:900,color:"#fff"}}>2000 <span style={{fontSize:16,color:"rgba(255,255,255,0.6)"}}>ج.م أو أكتر</span></div>
+            <div style={{fontSize:11,color:"#10b981",fontWeight:700,marginTop:4}}>✅ {lang==="EN"?"Get EGP 200 off instantly!":"تحصل على خصم 200 ج.م فوري!"}</div>
           </div>
-          <div style={{textAlign:"center"}}>
-            <div style={{fontSize:10,color:"rgba(255,255,255,0.4)",fontWeight:700,marginBottom:4}}>{lang==="EN"?"Order value":"قيمة الطلب"}</div>
-            <div style={{fontSize:24,fontWeight:900,color:"rgba(255,255,255,0.3)",textDecoration:"line-through",textDecorationColor:"rgba(255,80,80,0.7)",textDecorationThickness:2}}>
-              <span style={{fontSize:13}}>ج.م </span>2000
-            </div>
-          </div>
-          <div style={{fontSize:22,color:"rgba(255,255,255,0.2)"}}>←</div>
-          <div style={{textAlign:"center"}}>
-            <div style={{fontSize:10,color:"#10b981",fontWeight:700,marginBottom:4}}>{lang==="EN"?"Pay only ✅":"تدفع فقط ✅"}</div>
-            <div style={{fontSize:30,fontWeight:900,color:"#fff"}}>
-              <span style={{fontSize:14,color:"rgba(255,255,255,0.7)"}}>ج.م </span>1800
-            </div>
+          {/* Angled 200 circle */}
+          <div style={{
+            width:72,height:72,borderRadius:"50%",
+            background:"linear-gradient(135deg,#E8821A,#f59e0b)",
+            display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",
+            transform:"rotate(-15deg)",
+            boxShadow:"0 8px 24px rgba(232,130,26,0.5)",
+            border:"3px solid rgba(255,255,255,0.25)",
+            flexShrink:0,
+          }}>
+            <span style={{fontSize:24,fontWeight:900,color:"#fff",lineHeight:1}}>200</span>
+            <span style={{fontSize:9,color:"rgba(255,255,255,0.85)",fontWeight:700}}>ج.م</span>
           </div>
         </div>
         {/* Countdown */}
