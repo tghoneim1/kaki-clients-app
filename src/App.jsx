@@ -647,7 +647,7 @@ ${itemLines}
 
       {/* 🎉 Promo banner — always visible */}
       <div style={{background:"linear-gradient(135deg,#312e81,#4f46e5)",padding:"10px 16px",borderBottom:"2px solid #7c3aed"}}>
-        <div onClick={()=>window.open("https://claude.ai/artifact/PL91UTzDsqkjdBDH7aVBjB","_blank")}
+        <div onClick={()=>window.open("https://claude.ai/artifact/XkPAJMbPu1Tox8SDMeLiEJ","_blank")}
           style={{display:"flex",alignItems:"center",gap:10,cursor:"pointer",marginBottom:8}}>
           <div style={{width:42,height:42,borderRadius:"50%",background:"#E8821A",border:"2px solid rgba(255,255,255,0.4)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",flexShrink:0,boxShadow:"0 4px 12px rgba(232,130,26,0.5)"}}>
             <span style={{fontSize:12,fontWeight:900,color:"#fff",lineHeight:1}}>200</span>
