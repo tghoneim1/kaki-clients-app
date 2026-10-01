@@ -21,7 +21,7 @@ const CHICKEN_AVG_WEIGHT=1.7;
 
 const PRODUCTS = [
   { id:"whole",        name:"فرخة كاملة (1600-1800 جم)",           nameEN:"Whole Chicken (1600-1800g)",               emoji:"🐔", price:Math.round(CHICKEN_PRICE_PER_KG*CHICKEN_AVG_WEIGHT), pricePerKg:CHICKEN_PRICE_PER_KG, unit:"فرخة", unitEN:"piece", qtyLabel:"فرخة", byWeight:true },
-  { id:"shamoort",     name:"فرخة صغيرة (شمورت) (750-1000 جم)",    nameEN:"Small Chicken (Shamort) (750-1000g)",      emoji:"🐣", price:140,  unit:"فرخة", unitEN:"piece", qtyLabel:"فرخة" },
+  { id:"shamoort",     name:"فرخة صغيرة (شاموط) (750-1000 جم)",    nameEN:"Small Chicken (Shamoot) (750-1000g)",      emoji:"🐣", price:140,  unit:"فرخة", unitEN:"piece", qtyLabel:"فرخة" },
   { id:"breast_full",  name:"صدور بالعظام",                        nameEN:"Bone-in Breasts",                          emoji:"🥩", price:250,  unit:"كج", unitEN:"kg" },
   { id:"breast_deb",   name:"صدور مخلية بدون دهون",                nameEN:"Boneless Skinless Breasts (fat removed)",  emoji:"🥩", price:390,  unit:"كج", unitEN:"kg" },
   { id:"fillet",       name:"صدور فيليه (بانيه) بدون دهون",         nameEN:"Fillet Breasts (Breaded), fat removed",    emoji:"🥓", price:390,  unit:"كج", unitEN:"kg" },
@@ -31,6 +31,7 @@ const PRODUCTS = [
   { id:"chicken_wings",name:"أجنحة (تشيكن وينجز)",                  nameEN:"Wings (Chicken Wings)",                    emoji:"🍗", price:150,  unit:"كج", unitEN:"kg" },
   { id:"shawarma",     name:"شاورمة بدون دهون",                    nameEN:"Shawarma, fat removed",                    emoji:"🌯", price:390,  unit:"كج", unitEN:"kg" },
   { id:"liver",        name:"كبدة ك",                              nameEN:"Liver",                                    emoji:"🫀", price:190,  unit:"كج", unitEN:"kg" },
+  { id:"giblets",      name:"كبد وقوانص ك",                        nameEN:"Liver & Gizzards",                         emoji:"🫀", price:80,   unit:"كج", unitEN:"kg" },
   { id:"gizzard",      name:"قوانص ك",                             nameEN:"Gizzards",                                 emoji:"🫁", price:70,   unit:"كج", unitEN:"kg" },
 ];
 
@@ -172,6 +173,28 @@ export default function ClientOrderForm(){
   const [step,setStep]=useState(1);
   const [lang,setLang]=useState("AR");
   const lookupRef=React.useRef(0);
+
+  // Countdown timer for promo banner
+  React.useEffect(()=>{
+    const KEY="kaki_offer_expiry_v1";
+    let expiry=localStorage.getItem(KEY);
+    if(!expiry){expiry=Date.now()+7*24*60*60*1000;localStorage.setItem(KEY,expiry);}
+    expiry=parseInt(expiry);
+    const pad=n=>String(Math.max(0,n)).padStart(2,"0");
+    const tick=()=>{
+      const diff=expiry-Date.now();
+      const el=id=>document.getElementById(id);
+      if(!el("bn-days")) return;
+      if(diff<=0){["days","hours","mins","secs"].forEach(id=>el("bn-"+id)&&(el("bn-"+id).textContent="00"));return;}
+      el("bn-days").textContent=pad(Math.floor(diff/86400000));
+      el("bn-hours").textContent=pad(Math.floor((diff%86400000)/3600000));
+      el("bn-mins").textContent=pad(Math.floor((diff%3600000)/60000));
+      el("bn-secs").textContent=pad(Math.floor((diff%60000)/1000));
+    };
+    tick();
+    const timer=setInterval(tick,1000);
+    return()=>clearInterval(timer);
+  },[]);
   const [dataChanged,setDataChanged]=useState(false);
   const [dataSaved,setDataSaved]=useState(false);
   const [saving,setSaving]=useState(false);
@@ -622,11 +645,53 @@ ${itemLines}
         ))}
       </div>
 
+      {/* 🎉 Promo banner — always visible */}
+      <div style={{background:"linear-gradient(135deg,#312e81,#4f46e5)",padding:"10px 16px",borderBottom:"2px solid #7c3aed"}}>
+        <div onClick={()=>window.open("https://claude.ai/artifact/PL91UTzDsqkjdBDH7aVBjB","_blank")}
+          style={{display:"flex",alignItems:"center",gap:10,cursor:"pointer",marginBottom:8}}>
+          <div style={{width:42,height:42,borderRadius:"50%",background:"#E8821A",border:"2px solid rgba(255,255,255,0.4)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",flexShrink:0,boxShadow:"0 4px 12px rgba(232,130,26,0.5)"}}>
+            <span style={{fontSize:12,fontWeight:900,color:"#fff",lineHeight:1}}>200</span>
+            <span style={{fontSize:8,color:"rgba(255,255,255,0.9)",fontWeight:700}}>ج.م</span>
+          </div>
+          <div style={{flex:1}}>
+            <div style={{fontSize:13,fontWeight:900,color:"#fff"}}>
+              {lang==="EN"?"🎉 EGP 200 off orders EGP 2000+!":"🎉 خصم 200 ج.م على فواتير 2000 ج.م أو أكتر!"}
+            </div>
+            <div style={{fontSize:10,color:"rgba(255,255,255,0.7)",marginTop:2}}>
+              {lang==="EN"?"⚡ Limited time — until stock runs out":"⚡ لمدة أسبوع أو حتى نفاد الكمية"}
+            </div>
+          </div>
+          <span style={{color:"rgba(255,255,255,0.5)",fontSize:18}}>›</span>
+        </div>
+        {/* Countdown */}
+        <div style={{display:"flex",justifyContent:"center",gap:6,alignItems:"center"}}>
+          {[["days","أيام","d"],["hours","ساعات","h"],["mins","دقائق","m"],["secs","ثواني","s"]].map(([id,ar,en],i,arr)=>(
+            <React.Fragment key={id}>
+              <div style={{textAlign:"center"}}>
+                <div id={`bn-${id}`} style={{background:"rgba(0,0,0,0.3)",border:"1px solid rgba(255,255,255,0.2)",borderRadius:6,color:"#fff",fontWeight:900,fontSize:16,width:36,height:28,display:"flex",alignItems:"center",justifyContent:"center",fontVariantNumeric:"tabular-nums"}}>00</div>
+                <div style={{fontSize:8,color:"rgba(255,255,255,0.5)",marginTop:2}}>{lang==="EN"?en:ar}</div>
+              </div>
+              {i<arr.length-1&&<span style={{color:"rgba(255,255,255,0.4)",fontWeight:900,fontSize:14,marginBottom:14}}>:</span>}
+            </React.Fragment>
+          ))}
+        </div>
+      </div>
+
       <div style={{padding:16,paddingBottom:100}}>
 
         {/* ══ STEP 1 — Order items (NEW FIRST STEP) ══ */}
         {step===1&&(
           <div>
+            {/* Promo reminder in order step */}
+            <div style={{background:"linear-gradient(135deg,#1e1b4b,#312e81)",borderRadius:12,padding:"10px 14px",marginBottom:14,display:"flex",alignItems:"center",gap:10,border:"1px solid #4f46e5"}}>
+              <span style={{fontSize:22}}>🎁</span>
+              <div style={{flex:1,fontSize:11,color:"rgba(255,255,255,0.85)",lineHeight:1.6}}>
+                {lang==="EN"
+                  ?"Order EGP 2000+ and get EGP 200 off instantly!"
+                  :"اطلب بـ 2000 ج.م أو أكتر واحصل على خصم 200 ج.م فوري!"}
+              </div>
+              <div style={{background:"#E8821A",borderRadius:8,padding:"3px 8px",fontSize:11,fontWeight:900,color:"#fff",flexShrink:0}}>200 ج.م</div>
+            </div>
             <div style={{fontWeight:800,fontSize:16,color:GOLD,marginBottom:4}}>{t.orderTitle}</div>
             <div style={{fontSize:12,color:MUT,marginBottom:16}}>{t.orderSub}</div>
 
