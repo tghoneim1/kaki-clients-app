@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 
 const IMG_DATA = {
@@ -173,28 +172,6 @@ export default function ClientOrderForm(){
   const [step,setStep]=useState(1);
   const [lang,setLang]=useState("AR");
   const lookupRef=React.useRef(0);
-
-  // Countdown timer for promo banner
-  React.useEffect(()=>{
-    const KEY="kaki_offer_expiry_v1";
-    let expiry=localStorage.getItem(KEY);
-    if(!expiry){expiry=Date.now()+7*24*60*60*1000;localStorage.setItem(KEY,expiry);}
-    expiry=parseInt(expiry);
-    const pad=n=>String(Math.max(0,n)).padStart(2,"0");
-    const tick=()=>{
-      const diff=expiry-Date.now();
-      const el=id=>document.getElementById(id);
-      if(!el("cd-days")) return;
-      if(diff<=0){["days","hours","mins","secs"].forEach(id=>el("bn-"+id)&&(el("bn-"+id).textContent="00"));return;}
-      el("cd-days").textContent=pad(Math.floor(diff/86400000));
-      el("cd-hours").textContent=pad(Math.floor((diff%86400000)/3600000));
-      el("cd-mins").textContent=pad(Math.floor((diff%3600000)/60000));
-      el("cd-secs").textContent=pad(Math.floor((diff%60000)/1000));
-    };
-    tick();
-    const timer=setInterval(tick,1000);
-    return()=>clearInterval(timer);
-  },[]);
   const [dataChanged,setDataChanged]=useState(false);
   const [dataSaved,setDataSaved]=useState(false);
   const [saving,setSaving]=useState(false);
@@ -645,79 +622,11 @@ ${itemLines}
         ))}
       </div>
 
-      {/* 🔥 Full Promo Card */}
-      <div style={{background:"#0f0f1a",margin:"0",padding:"24px 16px",borderBottom:"2px solid #E8821A",position:"relative",overflow:"hidden"}}>
-        {/* Orbs */}
-        <div style={{position:"absolute",width:160,height:160,borderRadius:"50%",background:"rgba(232,130,26,0.2)",filter:"blur(40px)",top:-40,right:-30,pointerEvents:"none"}}/>
-        <div style={{position:"absolute",width:120,height:120,borderRadius:"50%",background:"rgba(124,58,237,0.18)",filter:"blur(40px)",bottom:-30,left:-20,pointerEvents:"none"}}/>
-        {/* Badges */}
-        <div style={{display:"flex",gap:8,marginBottom:14,flexWrap:"wrap",position:"relative",zIndex:1}}>
-          <span style={{padding:"4px 12px",borderRadius:20,fontSize:11,fontWeight:800,background:"rgba(232,130,26,0.15)",border:"1px solid rgba(232,130,26,0.4)",color:"#E8821A"}}>🔥 {lang==="EN"?"Limited Offer":"عرض محدود"}</span>
-          <span style={{padding:"4px 12px",borderRadius:20,fontSize:11,fontWeight:800,background:"rgba(124,58,237,0.15)",border:"1px solid rgba(124,58,237,0.4)",color:"#a78bfa"}}>⚡ {lang==="EN"?"Until stock runs out":"حتى نفاد الكمية"}</span>
-        </div>
-        {/* Hero */}
-        <div style={{textAlign:"center",marginBottom:16,position:"relative",zIndex:1}}>
-          <div style={{fontSize:11,color:"rgba(255,255,255,0.4)",letterSpacing:2,textTransform:"uppercase",marginBottom:6}}>{lang==="EN"?"Save on your order":"وفّر على طلبك"}</div>
-          <div style={{fontSize:72,fontWeight:900,lineHeight:1,background:"linear-gradient(135deg,#ff9a3c,#E8821A,#f59e0b)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text"}}>200</div>
-          <div style={{display:"inline-block",background:"rgba(232,130,26,0.15)",border:"1px solid rgba(232,130,26,0.4)",color:"#E8821A",fontSize:18,fontWeight:900,padding:"4px 18px",borderRadius:10,marginTop:4}}>
-            {lang==="EN"?"EGP instant discount":"ج.م خصم فوري"}
-          </div>
-        </div>
-        {/* Price comparison */}
-        <div style={{background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:14,padding:"14px 16px",marginBottom:14,display:"flex",alignItems:"center",justifyContent:"space-between",position:"relative",zIndex:1}}>
-          <div style={{position:"absolute",top:-11,left:"50%",transform:"translateX(-50%)",background:"#10b981",color:"#fff",fontSize:11,fontWeight:900,padding:"3px 14px",borderRadius:20,whiteSpace:"nowrap"}}>
-            💰 {lang==="EN"?"You save EGP 200!":"وفّرت 200 ج.م!"}
-          </div>
-          <div style={{textAlign:"center"}}>
-            <div style={{fontSize:10,color:"rgba(255,255,255,0.4)",fontWeight:700,marginBottom:4}}>{lang==="EN"?"Order value":"قيمة الطلب"}</div>
-            <div style={{fontSize:24,fontWeight:900,color:"rgba(255,255,255,0.3)",textDecoration:"line-through",textDecorationColor:"rgba(255,80,80,0.7)",textDecorationThickness:2}}>
-              <span style={{fontSize:13}}>ج.م </span>2000
-            </div>
-          </div>
-          <div style={{fontSize:22,color:"rgba(255,255,255,0.2)"}}>←</div>
-          <div style={{textAlign:"center"}}>
-            <div style={{fontSize:10,color:"#10b981",fontWeight:700,marginBottom:4}}>{lang==="EN"?"Pay only ✅":"تدفع فقط ✅"}</div>
-            <div style={{fontSize:30,fontWeight:900,color:"#fff"}}>
-              <span style={{fontSize:14,color:"rgba(255,255,255,0.7)"}}>ج.م </span>1800
-            </div>
-          </div>
-        </div>
-        {/* Countdown */}
-        <div style={{textAlign:"center",marginBottom:14,position:"relative",zIndex:1}}>
-          <div style={{fontSize:10,color:"rgba(255,255,255,0.35)",letterSpacing:1,fontWeight:700,marginBottom:8,textTransform:"uppercase"}}>⏳ {lang==="EN"?"Offer ends in":"ينتهي العرض خلال"}</div>
-          <div style={{display:"flex",justifyContent:"center",gap:6,alignItems:"center"}}>
-            {[["cd-days","أيام","Days"],["cd-hours","ساعات","Hours"],["cd-mins","دقائق","Mins"],["cd-secs","ثواني","Secs"]].map(([id,ar,en],i,arr)=>(
-              <React.Fragment key={id}>
-                <div style={{textAlign:"center"}}>
-                  <div id={id} style={{background:"rgba(255,255,255,0.07)",border:"1px solid rgba(255,255,255,0.12)",borderRadius:10,color:"#fff",fontSize:22,fontWeight:900,width:52,height:42,display:"flex",alignItems:"center",justifyContent:"center"}}>00</div>
-                  <div style={{fontSize:9,color:"rgba(255,255,255,0.3)",marginTop:3,fontWeight:700}}>{lang==="EN"?en:ar}</div>
-                </div>
-                {i<arr.length-1&&<div style={{color:"rgba(255,255,255,0.2)",fontSize:20,fontWeight:900,paddingBottom:14}}>:</div>}
-              </React.Fragment>
-            ))}
-          </div>
-        </div>
-        {/* CTA */}
-        <a href="https://kaki-nine.vercel.app" style={{display:"block",background:"linear-gradient(135deg,#E8821A,#f59e0b)",color:"#000",textAlign:"center",fontSize:14,fontWeight:900,padding:"13px",borderRadius:14,textDecoration:"none",position:"relative",zIndex:1,boxShadow:"0 6px 24px rgba(232,130,26,0.45)"}}>
-          🛒 {lang==="EN"?"Order now — kaki-nine.vercel.app":"اطلب دلوقتي — kaki-nine.vercel.app"}
-        </a>
-      </div>
-
       <div style={{padding:16,paddingBottom:100}}>
 
         {/* ══ STEP 1 — Order items (NEW FIRST STEP) ══ */}
         {step===1&&(
           <div>
-            {/* Promo reminder in order step */}
-            <div style={{background:"linear-gradient(135deg,#1e1b4b,#312e81)",borderRadius:12,padding:"10px 14px",marginBottom:14,display:"flex",alignItems:"center",gap:10,border:"1px solid #4f46e5"}}>
-              <span style={{fontSize:22}}>🎁</span>
-              <div style={{flex:1,fontSize:11,color:"rgba(255,255,255,0.85)",lineHeight:1.6}}>
-                {lang==="EN"
-                  ?"Order EGP 2000+ and get EGP 200 off instantly!"
-                  :"اطلب بـ 2000 ج.م أو أكتر واحصل على خصم 200 ج.م فوري!"}
-              </div>
-              <div style={{background:"#E8821A",borderRadius:8,padding:"3px 8px",fontSize:11,fontWeight:900,color:"#fff",flexShrink:0}}>200 ج.م</div>
-            </div>
             <div style={{fontWeight:800,fontSize:16,color:GOLD,marginBottom:4}}>{t.orderTitle}</div>
             <div style={{fontSize:12,color:MUT,marginBottom:16}}>{t.orderSub}</div>
 
