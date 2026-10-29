@@ -492,7 +492,7 @@ export default function ClientOrderForm(){
     if(delivery==="pickup"||!delivery) return true;
     const e={};
     if(!gov)e.gov=true;
-    if(!area)e.area=true;
+    if(gov==="أخرى"){if(!customGov.trim())e.gov=true;}else{if(!area)e.area=true;}
     if(!building.trim())e.building=true;
     if(!aptNum.trim())e.aptNum=true;
     if(isCompound&&!compoundName.trim())e.compoundName=true;
@@ -511,7 +511,7 @@ export default function ClientOrderForm(){
   const sendOrder=async()=>{
     setSending(true);
     const fullName=`${prefix?prefix+" ":""}${name}`.trim();
-    const fullAddress=delivery==="pickup"?"استلام شخصي":`${gov==="أخرى"?customGov:gov} — ${area}${isCompound&&compoundName?" — كومباوند "+compoundName:""}${street?" — "+street:""}${building?" — رقم "+building:""}${aptNum?" ش"+aptNum:""}${floor?" د"+floor:""}${extra?" — "+extra:""}`;
+    const fullAddress=delivery==="pickup"?"استلام شخصي":`${gov==="أخرى"?customGov:gov}${gov!=="أخرى"?" — "+area:""}${isCompound&&compoundName?" — كومباوند "+compoundName:""}${street?" — "+street:""}${building?" — رقم "+building:""}${aptNum?" ش"+aptNum:""}${floor?" د"+floor:""}${extra?" — "+extra:""}`;
     const orderId="ORD-"+Date.now();
     const order={
       id:orderId,client:fullName,phone,address:fullAddress,
@@ -857,42 +857,42 @@ ${itemLines}
               ))}
             </div>
 
-            {/* Area */}
-            {gov&&!area&&(
+            {/* Area — normal govs only */}
+            {gov&&gov!=="أخرى"&&!area&&(
               <>
-                {gov==="أخرى"?(
-                  <>
-                    <label style={lbl}>{lang==="EN"?"Governorate *":"المحافظة *"}</label>
-                    <input value={customGov}
-                      onChange={e=>{setCustomGov(e.target.value);setArea(e.target.value.trim());if(e.target.value.trim())setErrors(r=>({...r,area:false}));}}
-                      placeholder={lang==="EN"?"e.g. Alexandria, Tanta, Mansoura...":"مثال: الإسكندرية، طنطا، المنصورة..."}
-                      style={{width:"100%",boxSizing:"border-box",background:CARD,color:CREAM,border:`1px solid ${errors.area?"#ef4444":BDR}`,borderRadius:9,padding:"10px 12px",fontSize:13,fontFamily:"'Cairo',sans-serif",outline:"none",direction:"rtl",marginBottom:10}} />
-                  </>
-                ):(
-                  <>
-                    <label style={lbl}>{t.areaLabel}</label>
-                    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6,maxHeight:200,overflowY:"auto",marginBottom:10}}>
-                      {AREAS[gov].map(a=>(
-                        <button key={a} onClick={()=>{setArea(a);setErrors(r=>({...r,area:false}));}}
-                          style={{background:CARD,color:CREAM,border:`1px solid ${errors.area?"#ef4444":BDR}`,borderRadius:9,padding:"9px 8px",fontSize:12,fontFamily:"'Cairo',sans-serif",cursor:"pointer",textAlign:"center"}}>
-                          {lang==="EN"?(t.areaDisplayNames?.[a]||a):a}
-                        </button>
-                      ))}
-                    </div>
-                  </>
-                )}
+                <label style={lbl}>{t.areaLabel}</label>
+                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6,maxHeight:200,overflowY:"auto",marginBottom:10}}>
+                  {AREAS[gov].map(a=>(
+                    <button key={a} onClick={()=>{setArea(a);setErrors(r=>({...r,area:false}));}}
+                      style={{background:CARD,color:CREAM,border:`1px solid ${errors.area?"#ef4444":BDR}`,borderRadius:9,padding:"9px 8px",fontSize:12,fontFamily:"'Cairo',sans-serif",cursor:"pointer",textAlign:"center"}}>
+                      {lang==="EN"?(t.areaDisplayNames?.[a]||a):a}
+                    </button>
+                  ))}
+                </div>
               </>
             )}
-            {gov&&area&&(
-              <button onClick={()=>{setArea("");if(gov==="أخرى")setCustomGov("");}}
+
+            {/* Selected area pill — normal govs */}
+            {gov&&gov!=="أخرى"&&area&&(
+              <button onClick={()=>setArea("")}
                 style={{width:"100%",background:GOV_COLORS[gov]||GOLD,color:"#000",border:"none",borderRadius:10,padding:"11px 14px",fontWeight:800,fontSize:13,fontFamily:"'Cairo',sans-serif",cursor:"pointer",display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
-                <span>📍 {gov==="أخرى"?customGov:(lang==="EN"?(t.govDisplayNames?.[gov]||gov):gov)} — {lang==="EN"?(t.areaDisplayNames?.[area]||area):area}</span>
+                <span>📍 {lang==="EN"?(t.govDisplayNames?.[gov]||gov):gov} — {lang==="EN"?(t.areaDisplayNames?.[area]||area):area}</span>
                 <span style={{fontSize:11,fontWeight:400}}>{t.changeBtn}</span>
               </button>
             )}
 
+            {/* أخرى — governorate text field, always visible */}
+            {gov==="أخرى"&&(
+              <>
+                <label style={lbl}>{lang==="EN"?"Governorate *":"المحافظة *"}</label>
+                <input value={customGov} onChange={e=>setCustomGov(e.target.value)}
+                  placeholder={lang==="EN"?"e.g. Alexandria, Tanta, Mansoura...":"مثال: الإسكندرية، طنطا، المنصورة..."}
+                  style={{width:"100%",boxSizing:"border-box",background:CARD,color:CREAM,border:`1px solid ${errors.gov?"#ef4444":BDR}`,borderRadius:9,padding:"10px 12px",fontSize:13,fontFamily:"'Cairo',sans-serif",outline:"none",direction:"rtl",marginBottom:10}} />
+              </>
+            )}
+
             {/* Property type */}
-            {area&&(
+            {(gov!=="أخرى"?area:gov==="أخرى")&&(
               <>
                 <div style={{display:"flex",gap:8,marginBottom:10}}>
                   {[{id:"apt",label:t.aptType,icon:"🏢"},{id:"house",label:t.villaType,icon:"🏠"}].map(pt=>(
@@ -990,7 +990,7 @@ ${itemLines}
               <div style={{fontSize:13,color:CREAM,lineHeight:2}}>
                 <div>👤 {prefix?prefix+" ":""}{name}</div>
                 <div>📞 {phone}</div>
-                <div>{delivery==="pickup"?"🏪 استلام شخصي":lang==="EN"?`🚚 Delivery — ${gov==="أخرى"?customGov:(t.govDisplayNames?.[gov]||gov)} — ${t.areaDisplayNames?.[area]||area}`:`🛵 توصيل — ${gov==="أخرى"?customGov:gov} — ${area}`}</div>
+                <div>{delivery==="pickup"?"🏪 استلام شخصي":lang==="EN"?`🚚 Delivery — ${gov==="أخرى"?customGov:(t.govDisplayNames?.[gov]||gov)}${gov!=="أخرى"?" — "+(t.areaDisplayNames?.[area]||area):""}`:`🛵 توصيل — ${gov==="أخرى"?customGov:gov}${gov!=="أخرى"?" — "+area:""}`}</div>
                 {delivery==="delivery"&&<div style={{fontSize:12,color:MUT}}>{street} — {building} ش{aptNum}{floor?" د"+floor:""}</div>}
                 {extra&&<div style={{fontSize:12,color:MUT}}>📝 {extra}</div>}
                 {mapsLink&&<div style={{fontSize:11,color:"#10b981"}}>{lang==="EN"?"🔗 Google Maps link added ✅":"🔗 رابط Google Maps مضاف ✅"}</div>}
