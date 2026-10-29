@@ -25,7 +25,7 @@ const PRODUCTS = [
   { id:"whole",        name:"فرخة كاملة (1600-1800 جم)",           nameEN:"Whole Chicken (1600-1800g)",               emoji:"🐔", price:Math.round(CHICKEN_PRICE_PER_KG*CHICKEN_AVG_WEIGHT), pricePerKg:CHICKEN_PRICE_PER_KG, unit:"فرخة", unitEN:"piece", qtyLabel:"فرخة", byWeight:true },
   { id:"shamoort",     name:"فرخة صغيرة (شامورت) (750-1000 جم)",    nameEN:"Small Chicken (Shamort) (750-1000g)",      emoji:"🐣", price:140,  unit:"فرخة", unitEN:"piece", qtyLabel:"فرخة" },
   { id:"breast_deb",   name:"صدور مخلية بدون دهون",                nameEN:"Boneless Skinless Breasts (without fat)",  emoji:"🥩", price:390,  unit:"كج", unitEN:"kg" },
-  { id:"fillet",       name:"صدور فيليه (بانيه) بدون دهون",         nameEN:"Fillet Breasts ,                             emoji:"🥓", price:390,  unit:"كج", unitEN:"kg" },
+  { id:"fillet",       name:"صدور فيليه (بانيه) بدون دهون",         nameEN:"Fillet Breasts" ,                             emoji:"🥓", price:390,  unit:"كج", unitEN:"kg" },
   { id:"wings",        name:"وراك كاملة",                          nameEN:"Whole Leg Quarters",                       emoji:"🍗", price:190,  unit:"كج", unitEN:"kg" },
   { id:"tips",         name:"دبابيس (كينتاكي)",                    nameEN:"Drumstick (KFC-style)",                    emoji:"🍖", price:275,  unit:"كج", unitEN:"kg" },
   { id:"shish",        name:"شيش طاوق بدون دهون",                  nameEN:"Shish Tawook, without fat",                emoji:"🍢", price:390,  unit:"كج", unitEN:"kg" },
