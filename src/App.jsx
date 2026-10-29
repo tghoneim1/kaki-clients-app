@@ -862,10 +862,10 @@ ${itemLines}
               <>
                 {gov==="أخرى"?(
                   <>
-                    <label style={lbl}>{lang==="EN"?"Enter your area / district:":"اكتب منطقتك / حيّك:"}</label>
+                    <label style={lbl}>{lang==="EN"?"Governorate *":"المحافظة *"}</label>
                     <input value={customGov}
                       onChange={e=>{setCustomGov(e.target.value);setArea(e.target.value.trim());if(e.target.value.trim())setErrors(r=>({...r,area:false}));}}
-                      placeholder={lang==="EN"?"e.g. Alexandria — Sporting...":"مثال: طنطا — حي الشرق..."}
+                      placeholder={lang==="EN"?"e.g. Alexandria, Tanta, Mansoura...":"مثال: الإسكندرية، طنطا، المنصورة..."}
                       style={{width:"100%",boxSizing:"border-box",background:CARD,color:CREAM,border:`1px solid ${errors.area?"#ef4444":BDR}`,borderRadius:9,padding:"10px 12px",fontSize:13,fontFamily:"'Cairo',sans-serif",outline:"none",direction:"rtl",marginBottom:10}} />
                   </>
                 ):(
