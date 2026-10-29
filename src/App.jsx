@@ -187,8 +187,6 @@ export default function ClientOrderForm(){
   const [gov,setGov]=useState("");
   const [area,setArea]=useState("");
   const [customGov,setCustomGov]=useState("");
-  const [customGovDone,setCustomGovDone]=useState(false);
-  const [customArea,setCustomArea]=useState("");
   const [propType,setPropType]=useState("apt");
   const [building,setBuilding]=useState("");
   const [aptNum,setAptNum]=useState("");
@@ -852,7 +850,7 @@ ${itemLines}
             <label style={lbl}>المحافظة *</label>
             <div style={{display:"flex",gap:6,marginBottom:8}}>
               {Object.keys(AREAS).map(g=>(
-                <button key={g} onClick={()=>{setGov(g===gov?"":g);setArea("");setCustomGovDone(false);setCustomArea("");setErrors(r=>({...r,gov:false}));}}
+                <button key={g} onClick={()=>{setGov(g===gov?"":g);setArea("");setCustomGov("");setErrors(r=>({...r,gov:false}));}}
                   style={{flex:1,background:gov===g?(GOV_COLORS[g]||GOLD):CARD,color:gov===g?"#fff":DARK,border:`1.5px solid ${errors.gov?ERROR:gov===g?(GOV_COLORS[g]||GOLD):BDR}`,borderRadius:10,padding:"10px 4px",fontWeight:700,fontSize:10,fontFamily:"'Cairo',sans-serif",cursor:"pointer"}}>
                   {lang==="EN"?(t.govDisplayNames?.[g]||g):g} {gov===g?"▲":"▼"}
                 </button>
@@ -864,33 +862,11 @@ ${itemLines}
               <>
                 {gov==="أخرى"?(
                   <>
-                    {!customGovDone?(
-                      <>
-                        <label style={lbl}>{lang==="EN"?"Enter your governorate:":"اكتب اسم المحافظة:"}</label>
-                        <div style={{display:"flex",gap:8,marginBottom:10}}>
-                          <input value={customGov} onChange={e=>setCustomGov(e.target.value)}
-                            placeholder={lang==="EN"?"e.g. Alexandria, Tanta...":"مثال: الإسكندرية، طنطا..."}
-                            style={{flex:1,background:CARD,color:CREAM,border:`1px solid ${errors.gov?"#ef4444":BDR}`,borderRadius:9,padding:"10px 12px",fontSize:13,fontFamily:"'Cairo',sans-serif",outline:"none",direction:"rtl"}} />
-                          <button onClick={()=>{if(customGov.trim())setCustomGovDone(true);}}
-                            style={{background:GOLD,color:"#000",border:"none",borderRadius:9,padding:"10px 18px",fontWeight:800,fontSize:13,fontFamily:"'Cairo',sans-serif",cursor:"pointer"}}>
-                            {lang==="EN"?"Next →":"التالي →"}
-                          </button>
-                        </div>
-                      </>
-                    ):(
-                      <>
-                        <label style={lbl}>{t.areaLabel}</label>
-                        <div style={{display:"flex",gap:8,marginBottom:10}}>
-                          <input value={customArea} onChange={e=>setCustomArea(e.target.value)}
-                            placeholder={lang==="EN"?"e.g. New District, Street name...":"مثال: حي جديد، اسم الشارع..."}
-                            style={{flex:1,background:CARD,color:CREAM,border:`1px solid ${errors.area?"#ef4444":BDR}`,borderRadius:9,padding:"10px 12px",fontSize:13,fontFamily:"'Cairo',sans-serif",outline:"none",direction:"rtl"}} />
-                          <button onClick={()=>{if(customArea.trim()){setArea(customArea.trim());setErrors(r=>({...r,area:false}));}}}
-                            style={{background:GOLD,color:"#000",border:"none",borderRadius:9,padding:"10px 18px",fontWeight:800,fontSize:13,fontFamily:"'Cairo',sans-serif",cursor:"pointer"}}>
-                            {lang==="EN"?"OK":"تأكيد"}
-                          </button>
-                        </div>
-                      </>
-                    )}
+                    <label style={lbl}>{lang==="EN"?"Enter your area / district:":"اكتب منطقتك / حيّك:"}</label>
+                    <input value={customGov}
+                      onChange={e=>{setCustomGov(e.target.value);setArea(e.target.value.trim());if(e.target.value.trim())setErrors(r=>({...r,area:false}));}}
+                      placeholder={lang==="EN"?"e.g. Alexandria — Sporting...":"مثال: طنطا — حي الشرق..."}
+                      style={{width:"100%",boxSizing:"border-box",background:CARD,color:CREAM,border:`1px solid ${errors.area?"#ef4444":BDR}`,borderRadius:9,padding:"10px 12px",fontSize:13,fontFamily:"'Cairo',sans-serif",outline:"none",direction:"rtl",marginBottom:10}} />
                   </>
                 ):(
                   <>
@@ -908,7 +884,7 @@ ${itemLines}
               </>
             )}
             {gov&&area&&(
-              <button onClick={()=>{setArea("");if(gov==="أخرى"){setCustomGovDone(false);setCustomArea("");}}}
+              <button onClick={()=>{setArea("");if(gov==="أخرى")setCustomGov("");}}
                 style={{width:"100%",background:GOV_COLORS[gov]||GOLD,color:"#000",border:"none",borderRadius:10,padding:"11px 14px",fontWeight:800,fontSize:13,fontFamily:"'Cairo',sans-serif",cursor:"pointer",display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
                 <span>📍 {gov==="أخرى"?customGov:(lang==="EN"?(t.govDisplayNames?.[gov]||gov):gov)} — {lang==="EN"?(t.areaDisplayNames?.[area]||area):area}</span>
                 <span style={{fontSize:11,fontWeight:400}}>{t.changeBtn}</span>
